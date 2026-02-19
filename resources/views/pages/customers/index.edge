@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Customer List</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+
+<body class="p-8 bg-slate-50 min-h-screen">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Customers</h1>
+            <div class="flex gap-2">
+                <a href="{{ route('customer.create') }}"
+                    class="bg-black text-white px-8 py-2 rounded-full font-bold shadow-md hover:bg-slate-800 transition-colors">
+                    + New Customer
+                </a>
+            </div>
+        </div>
+
+        <div class="mb-6 overflow-x-auto shadow-xl rounded-xl border-none">
+            <table class="min-w-full border-collapse bg-white">
+                <thead style="background-color: #A9B5D1;">
+                    <tr>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">Full Name
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">Email
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">Phone
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">Address
+                        </th>
+                        <th class="px-8 py-5 text-right text-xs font-bold tracking-widest text-white uppercase">Actions
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @each((customer, index) in customers)
+                    <tr class="{{ index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' }} group transition-colors hover:bg-blue-50/60 border-b last:border-0"
+                        style="border-color: #F3F4F6;">
+
+                        <td class="px-8 py-6 text-sm font-bold text-slate-900">
+                            {{ customer.name }}
+                        </td>
+
+                        <td class="px-8 py-6 text-sm text-slate-600">
+                            {{ customer.email }}
+                        </td>
+
+                        <td class="px-8 py-6 text-sm text-slate-600">
+                            {{ customer.phoneNumber || 'N/A' }}
+                        </td>
+
+                        <td class="px-8 py-6 text-sm text-slate-600">
+                            {{ customer.address }}
+                        </td>
+
+                        <td class="px-8 py-6 text-sm text-right">
+                            <div class="inline-flex gap-4">
+                                <a href="{{ route('customer.edit', [customer.id]) }}"
+                                    class="text-slate-400 hover:text-black font-medium transition-colors">
+                                    Edit
+                                </a>
+
+                                <form action="{{ route('customer.destroy', [customer.id]) }}?_method=DELETE"
+                                    method="POST" class="inline">
+                                    {{ csrfField() }}
+                                    <button type="submit"
+                                        class="text-red-400 hover:text-red-700 font-medium transition-colors"
+                                        onclick="return confirm('Are you sure?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @end
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>
