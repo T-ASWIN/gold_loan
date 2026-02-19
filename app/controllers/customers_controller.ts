@@ -15,74 +15,59 @@ export default class CustomersController {
   }
 
   async store({ request, response }: HttpContext) {
-    try {
-      // 1. Validate
-      const payload = await request.validateUsing(createCustomerValidator)
-      const { pledgecard, ...customerData } = payload
+  try {
+    const { pledgecards, ...customerData } = await request.validateUsing(createCustomerValidator)
 
-      // 2. Determine the file path (keep it separate for now)
-      let filePath: string | null = null
-      if (pledgecard) {
-        filePath = await CustomerService.storePlegdeCard(pledgecard)
-      }
+    const filePaths = (pledgecards && Array.isArray(pledgecards))
+       ? await Promise.all(pledgecards.map(file => CustomerService.storePlegdeCard(file)))
+      : []
 
-      // 3. Run Transaction
-      await db.transaction(async (trx) => {
-        // Merge the data right here. This creates a NEW object that
-        // satisfies the Service requirements perfectly.
-        await CustomerService.create(
-          {
-            ...customerData,
-            pledgeCardUrl: filePath,
-          },
-          trx
-        )
-      })
+    await db.transaction(async (trx) => {
+      await CustomerService.create(customerData, filePaths, trx)
+    })
 
-      return response.redirect().toRoute('customer.index')
-    } catch (error) {
-      // It's helpful to log the error during development
-      console.error(error)
-      return response.redirect().back()
-    }
+    return response.redirect().toRoute('customer.index')
+  } catch (error) {
+    return response.redirect().back()
   }
+}
+
+
   async edit({ params, view }: HttpContext) {
-    const customer = await Customer.findOrFail(params.id)
+    
+    const customer = await Customer.query().where('id',params.id).preload('pledgeCards').firstOrFail()
+
     return view.render('pages/customers/edit', { customer })
   }
 
-  // app/controllers/customers_controller.ts
 
   async update({ params, request, response }: HttpContext) {
     try {
-      const payload = await request.validateUsing(createCustomerValidator)
-      const { pledgecard, ...customerData } = payload
+      const { pledgecards, ...customerData } = await request.validateUsing(createCustomerValidator)
 
-      const shouldDelete = request.input('delete_pledge_card') === 'true'
+      const deleteIds = request.input('remove_image_ids',[])
 
-      let filePath: string | null = null
+      const newFilePaths = (pledgecards && Array.isArray(pledgecards))
+       ? await Promise.all(pledgecards.map(file => CustomerService.storePlegdeCard(file)))
+       : []
 
-      // Process the file if it exists in the request
-      if (pledgecard) {
-        filePath = await CustomerService.storePlegdeCard(pledgecard)
-      }
-
-      await CustomerService.update(params.id, {
-        ...customerData,
-        pledgeCardUrl: filePath,
-        forceDelete: shouldDelete,
+      await db.transaction(async(trx)=>{
+        await CustomerService.update(params.id, customerData, newFilePaths, deleteIds, trx)
       })
 
       return response.redirect().toRoute('customer.index')
     } catch (error) {
-      console.error('UPDATE_ERROR:', error) // Check your terminal for specific SQL errors
       return response.redirect().back()
     }
   }
-  async destroy({ params, response }: HttpContext) {
-    const customer = await Customer.findOrFail(params.id)
-    await customer.delete()
 
-    return response.redirect().toRoute('customer.index')
-  }
+    async destroy({ params, response }: HttpContext) {
+      try {
+        await CustomerService.delete(params.id)
+        return response.redirect().toRoute('customer.index')
+      } catch (error) {
+         console.error('DELETE_ERROR:', error)
+         return response.redirect().back()
+      }
+   }
 }

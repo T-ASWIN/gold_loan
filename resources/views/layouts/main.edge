@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>@!section('title', 'GLAM')</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center shadow-md">
+    <h1 class="text-xl font-semibold">GLAM</h1>
+    <div>Hi, User</div>
+  </header>
+
+  <div class="flex flex-1">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-900 text-gray-300 p-6 space-y-4">
+      <nav class="space-y-3">
+        <a href="/users" class="block px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white">
+          Users
+        </a>
+        <a href="/branch" class="block px-4 py-2 rounded-md hover:bg-gray-700 hover:text-white">
+          Branch
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Page Content -->
+    <main class="flex-1 p-8">
+      @!section('content')
+    </main>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-gray-300 text-center py-3 text-sm">
+    © 2026 GLAM. All rights reserved.
+  </footer>
+
+</body>
+</html>

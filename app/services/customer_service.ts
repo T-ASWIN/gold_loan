@@ -6,63 +6,93 @@ import { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import fs from 'node:fs/promises'
 
 export default class CustomerService {
-  static async create(data: any, trx: TransactionClientContract) {
-    return await Customer.create(
-      {
-        name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber,
-        address: data.address,
-        pledgeCard: data.pledgeCardUrl,
-      },
-      { client: trx }
-    )
-  }
 
-  static async update(id: number, data: any) {
-    const customer = await Customer.findOrFail(id)
+  static async storePlegdeCard(file: MultipartFile): Promise<string> {
+    const fileName = `${cuid()}.${file.extname}`
+    const localPath = `customer/pledgeCard/${fileName}`
 
-    // Determine if we should delete the existing file
-    // (Either user clicked X, or they uploaded a new file to replace it)
-    if ((data.forceDelete || data.pledgeCardUrl) && customer.pledgeCard) {
-      const oldPath = app.makePath('public', customer.pledgeCard)
-      try {
-        await fs.unlink(oldPath)
-      } catch (e) {
-        // file might not exist on disk, ignore
-      }
-
-      // If they just clicked X but didn't upload a new one, set column to null
-      if (data.forceDelete && !data.pledgeCardUrl) {
-        customer.pledgeCard = null
-      }
-    }
-
-    // Update other fields
-    customer.merge({
-      name: data.name,
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      address: data.address,
-    })
-
-    // If a new file was uploaded, set the new path
-    if (data.pledgeCardUrl) {
-      customer.pledgeCard = data.pledgeCardUrl
-    }
-
-    return await customer.save()
-  }
-
-  static async storePlegdeCard(pledge_card: MultipartFile) {
-    const fileName = `${cuid()}.${pledge_card.extname}`
-    const relativePath = 'customer/pledgeCard' // Clean directory structure
-
-    await pledge_card.move(app.makePath('public', relativePath), {
+    await file.move(app.makePath('public/customer/pledgeCard'),{
       name: fileName,
     })
 
-    // Return only the path relative to 'public'
-    return `${relativePath}/${fileName}`
+    return localPath
+  }
+
+  static async create(data: any, filePaths: string[], trx: TransactionClientContract) {
+    console.log('File Paths received in Service:', filePaths) 
+      const customer = await Customer.create({
+         name: data.name,
+         email: data.email,
+         phoneNumber: data.phoneNumber,
+         address: data.address,
+      }, { client: trx })
+
+
+    if(filePaths.length > 0){
+      const pledgeData = filePaths.map((path)=> ({
+        pledgeCard:path,
+      }))
+
+      await customer.related('pledgeCards').createMany(pledgeData,{client:trx})
+    }
+    return customer
+  }
+
+  static async update(
+    id: number, 
+    data: any,
+    newFilePaths: string[],
+    deleteIds: number[],
+    trx: TransactionClientContract
+    ) {
+    const customer = await Customer.findOrFail(id, {client: trx })
+
+    customer.merge(data)
+    customer.useTransaction(trx)
+    await customer.save()
+
+    if(deleteIds.length > 0){
+      const deletePledge = await customer.related('pledgeCards').query().whereIn('id',deleteIds)
+    
+
+     for(const pledge of deletePledge){
+      try {
+          // Use app.makePath to point to the public folder
+          const absolutePath = app.makePath('public', pledge.pledgeCard)
+          await fs.unlink(absolutePath)
+        } catch (error) {
+          console.error(`Could not delete file: ${pledge.pledgeCard}`, error)
+        }
+    }
+
+    await customer.related('pledgeCards').query().useTransaction(trx).whereIn('id',deleteIds).delete()
+    }
+
+    
+
+    if(newFilePaths.length > 0){
+      const pledgeData =  newFilePaths.map(path => ({pledgeCard: path}))
+      await customer.related('pledgeCards').createMany(pledgeData,{client: trx})
+    }
+
+  }
+
+
+  static async delete(id: number) {
+        
+        const customer = await Customer.query()
+                         .where('id', id)
+                         .preload('pledgeCards')
+                         .firstOrFail()
+
+    for (const card of customer.pledgeCards) {
+    try {
+      const absolutePath = app.makePath('public', card.pledgeCard)
+      await fs.unlink(absolutePath)
+    } catch (error) {
+      console.error(`Cleanup error during customer delete for file ${card.pledgeCard}:`, error)
+    }
+    }
+     await customer.delete()
   }
 }

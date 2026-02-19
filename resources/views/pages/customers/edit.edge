@@ -9,12 +9,12 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
-<body class="bg-slate-50 min-h-screen py-6">
+<body class="bg-slate-50 min-h-screen py-12">
 
-    <div class="max-w-md mx-auto p-6 border rounded-2xl shadow-sm"
+    <div class="max-w-4xl mx-auto p-10 border rounded-2xl shadow-sm"
         style="background-color: #eeefef; border-color: #65696e;">
 
-        <div class="flex justify-between items-end mb-4">
+        <div class="flex justify-between items-end mb-8">
             <div class="space-y-1">
                 <span class="text-xl font-bold uppercase text-slate-600">Edit Profile</span>
                 <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
@@ -30,65 +30,67 @@
         <form action="{{ route('customer.update', [customer.id]) }}?_method=PUT" enctype="multipart/form-data" method="POST" class="space-y-6">
             {{ csrfField() }}
 
-            <div class="space-y-2">
-                <label for="name" class="block text-sm font-semibold text-slate-700">Full Name</label>
-                <input type="text" name="name" id="name" value="{{ old('name') || customer.name }}" required
-                    class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-            </div>
-
-            <div class="space-y-2">
-                <label for="email" class="block text-sm font-semibold text-slate-700">Email</label>
-                <input type="email" name="email" id="email" value="{{ old('email') || customer.email }}" required
-                    class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-            </div>
-
-            <div class="space-y-2">
-                <label for="phoneNumber" class="block text-sm font-semibold text-slate-700">Phone Number</label>
-                <input type="text" name="phoneNumber" id="phoneNumber"
-                    value="{{ old('phoneNumber') || customer.phoneNumber || '' }}"
-                    class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-            </div>
-
-            <div class="space-y-2">
-                <label for="address" class="block text-sm font-semibold text-slate-700">Address</label>
-                <textarea name="address" id="address" rows="3"
-                    class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">{{ old('address') || customer.address || '' }}</textarea>
-            </div>
-            
-            {{--  --}}
-
-            <div class="space-y-2" x-data="{ isDeleted: false, hasImage: {{ customer.pledgeCard ? 'true' : 'false' }} }">
-                <label class="block text-sm font-semibold text-slate-700">Pledge Card</label>
-            
-                <input type="hidden" name="delete_pledge_card" :value="isDeleted ? 'true' : 'false'">
-            
-                @if(customer.pledgeCard)
-                <div x-show="hasImage && !isDeleted"
-                    class="relative group w-full h-40 bg-white rounded-xl overflow-hidden border border-slate-200 shadow-inner mb-4">
-                    <img src="{{ customer.pledgeCardUrl }}" class="w-full h-full object-contain">
-            
-                    <button type="button" @click="isDeleted = true"
-                        class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg hover:bg-red-600 transition-transform active:scale-90">
-                        &times;
-                    </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                
+                <div class="space-y-2">
+                    <label for="name" class="block text-sm font-semibold text-slate-700">Full Name</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') || customer.name }}" required
+                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
                 </div>
-                @endif
-            
-                <div x-show="!hasImage || isDeleted" class="transition-all duration-300">
-                    <input type="file" name="pledgecard" id="pledgecard" class="block w-full text-sm text-slate-500
-                                  file:mr-4 file:py-2 file:px-4
-                                  file:rounded-full file:border-0
-                                  file:text-sm file:font-semibold
-                                  file:bg-slate-900 file:text-white
-                                  hover:file:bg-slate-800
-                                  cursor-pointer">
-                    <p class="text-xs text-slate-400 mt-2 italic">Select a new file to replace or leave empty</p>
+
+                <div class="space-y-2">
+                    <label for="email" class="block text-sm font-semibold text-slate-700">Email Address</label>
+                    <input type="email" name="email" id="email" value="{{ old('email') || customer.email }}" required
+                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
                 </div>
+
+                <div class="space-y-2">
+                    <label for="phoneNumber" class="block text-sm font-semibold text-slate-700">Phone Number</label>
+                    <input type="text" name="phoneNumber" id="phoneNumber"
+                        value="{{ old('phoneNumber') || customer.phoneNumber || '' }}"
+                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
+                </div>
+
+                <div class="space-y-2">
+                    <label for="address" class="block text-sm font-semibold text-slate-700">Physical Address</label>
+                    <textarea name="address" id="address" 
+                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">{{ old('address') || customer.address || '' }}</textarea>
+                </div>
+
+                <div class="space-y-4 md:col-span-2">
+    <label class="block text-sm font-semibold text-slate-700">Existing Pledge Cards</label>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        @each(card in customer.pledgeCards)
+            <div class="relative group h-32 border rounded-xl overflow-hidden" id="card-{{ card.id }}">
+                <img src="{{ asset(card.pledgeCard) }}" class="w-full h-full object-cover">
+                
+                <input type="checkbox" name="remove_image_ids[]" value="{{ card.id }}" class="hidden delete-checkbox">
+                
+                <button type="button" 
+                    onclick="markForDeletion({{ card.id }})"
+                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                    &times;
+                </button>
+            </div>
+        @end
+    </div>
+
+    <div class="pt-4 border-t border-slate-200">
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Add New Images</label>
+        <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4 mb-4"></div>
+        
+        <input type="file" name="pledgecards[]" id="pledgecard_input" class="hidden" multiple accept="image/*">
+        <button type="button" id="upload-trigger-btn" class="px-4 py-2 bg-slate-200 rounded-lg text-sm font-bold">
+            Upload More
+        </button>
+    </div>
+</div>
+                
             </div>
 
-            <div class="pt-6">
-                <button type="submit"
-                    class="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 px-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
+            <div class="pt-6 flex justify-center">
+                <button type="button" id="submit-all"
+                    class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
                     Save Changes
                 </button>
             </div>
