@@ -2,6 +2,7 @@
   import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import PledgeCard from './pledge_card.js'
+import Command from './command.js'
 
   export default class Customer extends BaseModel {
     @column({ isPrimary: true })
@@ -33,4 +34,7 @@ import PledgeCard from './pledge_card.js'
 
     @hasMany(()=>PledgeCard)
     declare pledgeCards: HasMany<typeof PledgeCard>
+
+    @hasMany(()=> Command)
+    declare commands: HasMany<typeof Command>
   }

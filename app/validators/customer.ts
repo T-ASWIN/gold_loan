@@ -7,6 +7,9 @@ export const createCustomerValidator = vine.compile(
     email: vine.string().email().trim(),
     phoneNumber: vine.string().trim().optional(),
     address: vine.string().trim().optional(),
+    commands: vine.array(
+      vine.string().trim().minLength(1)
+    ).optional(),
     pledgecards: vine.array(
       vine.file({
         size: '5mb',

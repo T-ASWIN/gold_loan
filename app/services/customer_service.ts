@@ -57,7 +57,6 @@ export default class CustomerService {
 
      for(const pledge of deletePledge){
       try {
-          // Use app.makePath to point to the public folder
           const absolutePath = app.makePath('public', pledge.pledgeCard)
           await fs.unlink(absolutePath)
         } catch (error) {

@@ -6,108 +6,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Add New Customer</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="/js/customer/customer_form.js"></script>
-</body>
 </head>
 
-<body class="bg-slate-50 min-h-screen py-12">
+<body class="bg-[#f8fafc] min-h-screen py-12 px-4">
 
-    <div class="max-w-4xl mx-auto p-8 border rounded-2xl shadow-sm"
-        style="background-color: #eeefef; border-color: #65696e;">
-
-        <div class="flex justify-between items-end mb-8">
-            <div class="space-y-1">
-                <span class="text-xl font-bold uppercase text-slate-600">Registration</span>
-                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
-                    New Customer
-                </h1>
-            </div>
-            <a href="{{ route('customer.index') }}"
-                class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
-                Cancel
-            </a>
+    <div class="max-w-4xl mx-auto bg-white p-10 rounded-xl shadow-sm border border-slate-100">
+        
+        <div class="mb-10">
+            <h1 class="text-3xl font-semibold text-slate-800">Customer Registration</h1>
         </div>
 
-        <form action="{{ route('customer.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form action="{{ route('customer.store') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
             {{ csrfField() }}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <div class="space-y-2">
-                    <label for="name" class="block text-sm font-semibold text-slate-700">Full Name</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') || '' }}" required placeholder="John Doe"
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-                    @if(flashMessages.has('errors.name'))
-                    <p class="text-xs font-bold text-red-600 mt-1">{{ flashMessages.get('errors.name') }}</p>
-                    @end
+            <section class="space-y-6">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Customer Info</h2>
+                    <div class="h-px w-full bg-slate-100"></div>
                 </div>
 
-                <div class="space-y-2">
-                    <label for="email" class="block text-sm font-semibold text-slate-700">Email Address</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') || '' }}" required
-                        placeholder="john@example.com"
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-                    @if(flashMessages.has('errors.email'))
-                    <p class="text-xs font-bold text-red-600 mt-1">{{ flashMessages.get('errors.email') }}</p>
-                    @end
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div class="space-y-2">
+                        <label for="name" class="block text-sm font-medium text-slate-700">Full Name</label>
+                        <input type="text" name="name" id="name" value="{{ old('name') || '' }}" required placeholder="Enter full name"
+                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
+                        @if(flashMessages.has('errors.name'))
+                            <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.name') }}</p>
+                        @end
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="email" class="block text-sm font-medium text-slate-700">Email Address</label>
+                        <input type="email" name="email" id="email" value="{{ old('email') || '' }}" required placeholder="Enter email address"
+                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
+                        @if(flashMessages.has('errors.email'))
+                            <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.email') }}</p>
+                        @end
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="phoneNumber" class="block text-sm font-medium text-slate-700">Phone Number</label>
+                        <input type="text" name="phoneNumber" id="phoneNumber" value="{{ old('phoneNumber') || '' }}" placeholder="Enter phone number"
+                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="address" class="block text-sm font-medium text-slate-700">Address</label>
+                        <input type="text" name="address" id="address" value="{{ old('address') || '' }}" placeholder="Enter address"
+                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
+                    </div>
+                </div>
+            </section>
+
+            <section class="space-y-6">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Commands</h2>
+                    <div class="h-px w-full bg-slate-100"></div>
                 </div>
 
-                <div class="space-y-2">
-                    <label for="phoneNumber" class="block text-sm font-semibold text-slate-700">Phone Number</label>
-                    <input type="text" name="phoneNumber" id="phoneNumber" value="{{ old('phoneNumber') || '' }}"
-                        placeholder="+1 (555) 000-0000"
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
+                <div id="command-container" class="space-y-3">
+                    <div class="flex items-center gap-2 group">
+                        <input type="text" name="commands[]" placeholder="Command 1"
+                            class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                        <button type="button" class="p-3 text-slate-400 hover:text-red-500 bg-slate-50 rounded-lg border border-slate-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label for="address" class="block text-sm font-semibold text-slate-700">Physical Address</label>
-                    <textarea name="address" id="address" placeholder="Street, City, Country"
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">{{ old('address') || '' }}</textarea>
-                </div>
+                <button type="button" onclick="addCommandField()"
+                    class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
+                    <span class="mr-2">+</span> Add Command
+                </button>
+            </section>
 
-                <div class="space-y-2 md:col-span-2">
-    <label class="block text-sm font-semibold text-slate-700">Pledge Cards</label>
-    
-    <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        </div>
-
+            <section class="space-y-6">
     <div class="flex items-center gap-4">
-        <input 
-            type="file" 
-            name="pledgecards[]" 
-            id="pledgecard_input" 
-            class="hidden" 
-            accept="image/*"
-            multiple 
-        >
-
-        <button 
-            type="button" 
-            id="upload-trigger-btn"
-            class="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-full hover:bg-slate-800 transition-all active:scale-95 shadow-sm cursor-pointer"
-        >
-            Add Pledge Cards
-        </button>
-
-        <span id="file-name-display" class="text-sm text-slate-500 italic">No files chosen</span>
+        <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Attachments</h2>
+        <div class="h-px w-full bg-slate-100"></div>
     </div>
 
-    @if(flashMessages.has('errors.pledgecards'))
-    <p class="text-xs font-bold text-red-600 mt-1">{{ flashMessages.get('errors.pledgecards') }}</p>
-    @end
-</div>
+    <!-- Preview Grid -->
+    <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 
-            </div>
+    <div class="flex items-center gap-4">
+        <!-- Hidden File Input -->
+        <input type="file" 
+               name="pledgecards[]" 
+               id="pledgecard_input" 
+               class="hidden" 
+               accept="image/*"
+               multiple>
 
-            <div class="pt-4 flex justify-center">
+        <!-- Trigger Button -->
+        <button type="button" 
+            id="upload-trigger-btn"
+            class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
+            Upload Images
+        </button>
+
+        <span class="text-sm text-slate-500">You can upload multiple images</span>
+    </div>
+</section>
+
+            <div class="pt-10 flex items-center justify-end gap-4 border-t border-slate-100">
+                <a href="{{ route('customer.index') }}" 
+                    class="px-8 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all">
+                    Cancel
+                </a>
                 <button type="button" id="submit-all"
-                 class="bg-slate-900 hover:bg-slate-800 text-white py-4 px-8 rounded-xl font-bold shadow-lg transition-all active:scale-95">
-                  Create Customer
+                    class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
+                    Create Customer
                 </button>
             </div>
         </form>
     </div>
 
-</body>
+    <script>
+        let commandCount = 1;
 
+        function addCommandField(value = '') {
+            commandCount++;
+            const container = document.getElementById('command-container');
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 group";
+
+            div.innerHTML = `
+                <input type="text" name="commands[]" value="${value}" placeholder="Command ${commandCount}"
+                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                <button type="button" onclick="removeCommand(this)"
+                    class="p-3 text-slate-400 hover:text-red-500 bg-slate-50 rounded-lg border border-slate-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeCommand(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</body>
 </html>
