@@ -7,6 +7,7 @@ router
     router.get('/', [CustomersController, 'index']).as('index')
     router.get('/new', [CustomersController, 'create']).as('create')
     router.post('/', [CustomersController, 'store']).as('store')
+    router.post('/command',[CustomersController, 'storeCommand']).as('command')
     router.get('/:id/edit', [CustomersController, 'edit']).as('edit')
     router.put('/:id', [CustomersController, 'update']).as('update')
     router.delete('/:id', [CustomersController, 'destroy']).as('destroy')

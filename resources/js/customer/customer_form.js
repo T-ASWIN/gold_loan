@@ -5,22 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = document.getElementById('submit-all');
     const form = document.querySelector('form');
 
-    let allFiles = []; // This will store EVERY image you pick
+    let allFiles = []; 
 
-    // 1. Handle File Selection (Appending)
     triggerBtn?.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', function() {
         const newFiles = Array.from(this.files);
         
-        // Add new files to our master array
         allFiles = [...allFiles, ...newFiles];
         
         renderPreviews();
-        fileInput.value = ''; // Reset input so you can pick the same file twice if needed
+        fileInput.value = ''; 
     });
 
-    // 2. Render Previews with "Remove" capability
     function renderPreviews() {
         previewGrid.innerHTML = '';
         if (allFiles.length > 0) previewGrid.classList.remove('hidden');
@@ -31,9 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const div = document.createElement('div');
                 div.className = "relative h-24 w-24 border rounded-lg overflow-hidden group";
                 div.innerHTML = `
-                    <img src="${e.target.result}" class="w-full h-full object-cover">
-                    <button type="button" data-index="${index}" class="remove-img absolute top-0 right-0 bg-red-500 text-white text-xs p-1 opacity-0 group-hover:opacity-100">✕</button>
-                `;
+                 <img src="${e.target.result}" class="w-full h-full object-cover">
+
+                <button type="button"
+                 data-index="${index}"
+                 class="remove-img absolute top-1 right-1 bg-gray-200 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 hover:bg-gray-300 transition">
+                  ✕
+                </button>
+                 `;
                 previewGrid.appendChild(div);
             };
             reader.readAsDataURL(file);
