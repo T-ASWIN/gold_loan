@@ -1,16 +1,76 @@
 const CustomersController = () => import('#controllers/customers_controller')
 import router from '@adonisjs/core/services/router'
-router.on('/').redirect('/customer')
+import { Permissions } from '#enums/permissions'
+import { middleware } from './kernel.js'
+const RegisterController = () => import('#controllers/auth/register_controller')
+const LoginController = () => import('#controllers/auth/login_controller')
+const LogoutController = () => import('#controllers/auth/logout_controller')
+router.on('/').redirect('/auth/login')
+router.on('/login').redirect('/auth/login')
 
 router
   .group(() => {
-    router.get('/', [CustomersController, 'index']).as('index')
-    router.get('/new', [CustomersController, 'create']).as('create')
-    router.post('/', [CustomersController, 'store']).as('store')
-    router.post('/command',[CustomersController, 'storeCommand']).as('command')
-    router.get('/:id/edit', [CustomersController, 'edit']).as('edit')
-    router.put('/:id', [CustomersController, 'update']).as('update')
-    router.delete('/:id', [CustomersController, 'destroy']).as('destroy')
+    // 1. Viewing requires VIEW permission
+    router
+      .get('/', [CustomersController, 'index'])
+      .as('index')
+      .use(middleware.roleUrlManager([Permissions.VIEW]))
+
+    // 2. Creating requires CREATE permission
+    router
+      .get('/new', [CustomersController, 'create'])
+      .as('create')
+      .use(middleware.roleUrlManager([Permissions.CREATE]))
+
+    router
+      .post('/', [CustomersController, 'store'])
+      .as('store')
+      .use(middleware.roleUrlManager([Permissions.CREATE]))
+
+    // 3. Commenting requires COMMENT permission
+    router
+      .post('/commend', [CustomersController, 'storeCommend'])
+      .as('commend')
+      .use(middleware.roleUrlManager([Permissions.COMMENT]))
+
+    // 4. Editing requires EDIT permission
+    router
+      .get('/:id/edit', [CustomersController, 'edit'])
+      .as('edit')
+      .use(middleware.roleUrlManager([Permissions.EDIT]))
+
+    router
+      .put('/:id', [CustomersController, 'update'])
+      .as('update')
+      .use(middleware.roleUrlManager([Permissions.EDIT]))
+
+    // 5. Deleting requires DELETE permission
+    router
+      .delete('/:id', [CustomersController, 'destroy'])
+      .as('destroy')
+      .use(middleware.roleUrlManager([Permissions.DELETE]))
+
+    // Show is usually general view
+    router
+      .get('/:id', [CustomersController, 'show'])
+      .as('show')
+      .use(middleware.roleUrlManager([Permissions.VIEW]))
   })
   .prefix('customer')
   .as('customer')
+  .use(middleware.auth())
+
+router
+  .group(() => {
+    router.get('/register', [RegisterController, 'show']).as('register.show')
+    // .use(middleware.guest())
+
+    router.post('/register', [RegisterController, 'store']).as('register.store')
+
+    router.get('/login', [LoginController, 'show']).as('login.show')
+    router.post('/login', [LoginController, 'store']).as('login.store')
+
+    router.post('/logout', [LogoutController, 'handle']).as('logout')
+  })
+  .prefix('/auth')
+  .as('auth')

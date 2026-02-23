@@ -20,6 +20,6 @@ export default class PledgeCard extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(()=> Customer)
-   declare customer: BelongsTo<typeof Customer>
+  @belongsTo(() => Customer)
+  declare customer: BelongsTo<typeof Customer>
 }

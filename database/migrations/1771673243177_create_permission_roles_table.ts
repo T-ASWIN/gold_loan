@@ -1,20 +1,15 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'commends'
+  protected tableName = 'permission_roles'
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
+      table.integer('role_id').unsigned().references('roles.id').onDelete('CASCADE')
+      table.integer('permission_id').unsigned().references('permissions.id').onDelete('CASCADE')
+      table.unique(['role_id', 'permission_id'])
 
-      table
-        .integer('customer_id')
-        .unsigned()
-        .references('id')
-        .inTable('customers')
-        .onDelete('CASCADE')
-      table.string('commend_name').notNullable()
-      table.timestamp('scheduled_at').notNullable()
       table.timestamp('created_at')
       table.timestamp('updated_at')
     })

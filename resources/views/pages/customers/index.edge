@@ -1,213 +1,211 @@
-    <!DOCTYPE html>
-    <html lang="en">
+@component('components/layout/index')
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Customer List</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-
-    <body class="p-8 bg-slate-50 min-h-screen">
-
-        <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-8">
-                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
-                    Customers
-                </h1>
-
-                <div class="flex gap-2">
-                    <a href="{{ route('customer.create') }}"
-                        class="bg-black text-white px-8 py-2 rounded-full font-bold shadow-md hover:bg-slate-800 transition-colors">
-                        + New Customer
-                    </a>
-                </div>
+@slot('main')
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
+                Customers
+            </h1>
+             @if(permissions && permissions.includes('create'))
+            <div class="flex gap-2">
+                <a href="{{ route('customer.create') }}"
+                    class="bg-black text-white px-8 py-2 rounded-full font-bold shadow-md hover:bg-slate-800 transition-colors">
+                    + New Customer
+                </a>
             </div>
-
-            <div class="mb-6 shadow-xl rounded-xl border-none overflow-visible">
-                <table class="min-w-full border-collapse bg-white ">
-                    <thead style="background-color: #A9B5D1;">
-                        <tr>
-                            <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
-                                Full Name
-                            </th>
-                            <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
-                                Email
-                            </th>
-                            <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
-                                Phone
-                            </th>
-                            <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
-                                Address
-                            </th>
-                            <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
-                                Commends
-                            </th>
-                            <th class="px-8 py-5 text-right text-xs font-bold tracking-widest text-white uppercase">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @each((customer, index) in customers)
-                        <tr class="{{ index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' }} group transition-colors hover:bg-blue-50/60 border-b last:border-0 relative"
-                            style="border-color: #F3F4F6;">
-
-                            <td class="px-8 py-6 text-sm font-bold text-slate-900">
-                                {{ customer.name }}
-                            </td>
-
-                            <td class="px-8 py-6 text-sm text-slate-600">
-                                {{ customer.email }}
-                            </td>
-
-                            <td class="px-8 py-6 text-sm text-slate-600">
-                                {{ customer.phoneNumber || 'N/A' }}
-                            </td>
-
-                            <td class="px-8 py-6 text-sm text-slate-600">
-                                {{ customer.address }}
-                            </td>
-                            <td class="px-8 py-6 text-sm relative">
-    @if(customer.commands.length)
-    <div class="relative inline-block text-left">
-        <button type="button" 
-            onclick="toggleCommandPopup(event, {{ customer.id }})"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 font-semibold text-xs border border-blue-100 hover:bg-blue-100 transition-colors focus:outline-none">
-            {{ customer.commands.length }} {{ customer.commands.length === 1 ? 'Commend' : 'Commends' }}
-        </button>
-
-        <div id="cmd-popup-{{ customer.id }}" 
-            class="hidden absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 z-[100] transform origin-top-left">
-            <div class="p-4">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">
-                    Commends
-                </div>
-                <div class="space-y-1.5">
-                    @each(cmd in customer.commands)
-                    <div class="px-3 py-2.5 bg-slate-50 text-slate-700 rounded-lg text-sm font-medium border border-transparent">
-                        {{ cmd.commandName }}
-                    </div>
-                    @end
-                </div>
-            </div>
-            <div class="absolute -top-1.5 left-6 w-3 h-3 bg-white border-l border-t border-slate-100 rotate-45"></div>
+            @endif
         </div>
-    </div>
-    @else
-    <span class="text-slate-400 italic text-sm">No commends</span>
-    @end
-</td>
-                            <td class="px-8 py-6 text-sm text-right relative">
-                                <div class="inline-block text-left">
 
-                                    <!-- Button -->
-                                    <button onclick="toggleDropdown({{ customer.id }})"
-                                        class="bg-white border px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-2 hover:bg-gray-50">
-                                        Select
-                                        <svg class="w-4 h-4 transition-transform"
-                                            id="arrow-{{ customer.id }}"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
+        <div class="mb-6 shadow-xl rounded-xl border-none overflow-visible">
+            <table class="min-w-full border-collapse bg-white ">
+                <thead style="background-color: #A9B5D1;">
+                    <tr>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+                            Full Name
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+                            Email
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+                            Phone
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+                            Address
+                        </th>
+                        <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+                            Commends
+                        </th>
+                        <th class="px-8 py-5 text-right text-xs font-bold tracking-widest text-white uppercase">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
 
-                                    <!-- Dropdown -->
-                                    <div id="dropdown-{{ customer.id }}"
-                                        class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+                <tbody>
+                    @each((customer, index) in customers)
+                    <tr class="{{ index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' }} group transition-colors hover:bg-blue-50/60 border-b last:border-0 relative"
+                        style="border-color: #F3F4F6;">
 
-                                        <a href="{{ route('customer.edit', [customer.id]) }}"
-                                            class="block px-4 py-2 text-sm hover:bg-gray-100">
-                                            Edit
-                                        </a>
+                        <td class="px-8 py-6 text-sm font-bold text-slate-900">
+                            {{ customer.name }}
+                        </td>
 
-                                        <a href="#"
-                                            onclick="openCommandModal({{ customer.id}}, '{{customer.name}}')"
-                                            class="block px-4 py-2 text-sm hover:bg-gray-100">
-                                            Commend
-                                        </a>
+                        <td class="px-8 py-6 text-sm text-slate-600">
+                            {{ customer.email }}
+                        </td>
 
-                                        <form action="{{ route('customer.destroy', [customer.id]) }}?_method=DELETE"
-                                            method="POST"
-                                            class="inline">
-                                            {{ csrfField() }}
-                                            <button type="submit"
-                                                class="block px-4 py-2 text-sm">
-                                                Delete
-                                            </button>
-                                        </form>
+                        <td class="px-8 py-6 text-sm text-slate-600">
+                            {{ customer.phoneNumber || 'N/A' }}
+                        </td>
 
+                        <td class="px-8 py-6 text-sm text-slate-600">
+                            {{ customer.address }}
+                        </td>
+                        <td class="px-8 py-6 text-sm relative">
+                            @if(customer.commends.length)
+                            <div class="relative inline-block text-left">
+                                <button type="button" onclick="toggleCommendPopup(event, {{ customer.id }})"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 font-semibold text-xs border border-blue-100 hover:bg-blue-100 transition-colors focus:outline-none">
+                                    {{ customer.commends.length }} {{ customer.commends.length === 1 ? 'Commend' :
+                                    'Commends' }}
+                                </button>
+
+                                <div id="cmd-popup-{{ customer.id }}"
+                                    class="hidden absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 z-[100] transform origin-top-left">
+                                    <div class="p-4">
+                                        <div
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">
+                                            Commends
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            @each(cmd in customer.commends)
+                                            <div
+                                                class="px-3 py-2.5 bg-slate-50 text-slate-700 rounded-lg text-sm font-medium border border-transparent">
+                                                {{ cmd.commendName }}
+                                            </div>
+                                            @end
+                                        </div>
                                     </div>
+                                    <div
+                                        class="absolute -top-1.5 left-6 w-3 h-3 bg-white border-l border-t border-slate-100 rotate-45">
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            <span class="text-slate-400 italic text-sm">No commends</span>
+                            @end
+                        </td>
+                        <td class="px-8 py-6 text-sm text-right relative">
+                            <div class="inline-block text-left">
+
+                                <!-- Button -->
+                                <button onclick="toggleDropdown({{ customer.id }})"
+                                    class="bg-white border px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-2 hover:bg-gray-50">
+                                    Select
+                                    <svg class="w-4 h-4 transition-transform" id="arrow-{{ customer.id }}" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <!-- Dropdown -->
+                                
+                                <div id="dropdown-{{ customer.id }}"
+                                    class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+                                    @if(permissions && permissions.include('edit'))
+                                    <a href="{{ route('customer.edit', [customer.id]) }}"
+                                        class="block px-4 py-2 text-sm hover:bg-gray-100">
+                                        Edit
+                                    </a>
+                                    @endif
+                                    
+                                    
+                                    <a href="{{route('customer.show',[customer.id])}}"
+                                        class="block px-4 py-2 text-sm hover:bg-gray-100">
+                                        view
+                                    </a>
+                                    @if(permissions && permissions.includes('commend'))
+                                    <a href="#" onclick="openCommendModal({{ customer.id}}, '{{customer.name}}')"
+                                        class="block px-4 py-2 text-sm hover:bg-gray-100">
+                                        Commend
+                                    </a>
+                                    @endif
+                                    
+                                    @if(permissions && permissions.includes('delete'))
+                                    <form action="{{ route('customer.destroy', [customer.id]) }}?_method=DELETE"
+                                        method="POST" class="inline">
+                                        {{ csrfField() }}
+                                        <button type="submit" class="block px-4 py-2 text-sm">
+                                            Delete
+                                        </button>
+                                    </form>
+                                    @endif
 
                                 </div>
-                            </td>
-                        </tr>
-                        @end
-                    </tbody>
-                </table>
-            </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                    @end
+                </tbody>
+            </table>
         </div>
-<script>
-    function toggleDropdown(id) {
-        const dropdown = document.getElementById(`dropdown-${id}`);
-        const arrow = document.getElementById(`arrow-${id}`); 
+    </div>
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(`dropdown-${id}`);
+            const arrow = document.getElementById(`arrow-${id}`);
 
-        document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
-            if (el.id !== `dropdown-${id}`) {
-                el.classList.add('hidden');
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                if (el.id !== `dropdown-${id}`) {
+                    el.classList.add('hidden');
+                }
+            });
+
+            if (dropdown) dropdown.classList.toggle('hidden');
+            if (arrow) arrow.classList.toggle('rotate-180');
+        }
+
+        function toggleCommendPopup(event, id) {
+            event.stopPropagation();
+
+            const popup = document.getElementById(`cmd-popup-${id}`);
+
+            document.querySelectorAll('[id^="cmd-popup-"]').forEach(el => {
+                if (el.id !== `cmd-popup-${id}`) {
+                    el.classList.add('hidden');
+                }
+            });
+
+            if (popup) {
+                popup.classList.toggle('hidden');
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.text-left')) {
+                document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('[id^="arrow-"]').forEach(el => el.classList.remove('rotate-180'));
+            }
+
+            if (!e.target.closest('[id^="cmd-popup-"]')) {
+                document.querySelectorAll('[id^="cmd-popup-"]').forEach(el => el.classList.add('hidden'));
             }
         });
 
-        if (dropdown) dropdown.classList.toggle('hidden');
-        if (arrow) arrow.classList.toggle('rotate-180');
-    }
-
-    function toggleCommandPopup(event, id) {
-        event.stopPropagation();
-
-        const popup = document.getElementById(`cmd-popup-${id}`);
-        
-        document.querySelectorAll('[id^="cmd-popup-"]').forEach(el => {
-            if (el.id !== `cmd-popup-${id}`) {
-                el.classList.add('hidden');
-            }
-        });
-
-        if (popup) {
-            popup.classList.toggle('hidden');
+        function openCommendModal(id, name) {
+            document.getElementById('commendModal').classList.remove('hidden');
+            document.getElementById('customerId').value = id;
+            document.getElementById('customerName').innerText = name;
         }
-    }
 
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('.text-left')) {
-            document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="arrow-"]').forEach(el => el.classList.remove('rotate-180'));
+        function closeCommendModal() {
+            document.getElementById('commendModal').classList.add('hidden');
         }
-        
-        if (!e.target.closest('[id^="cmd-popup-"]')) {
-            document.querySelectorAll('[id^="cmd-popup-"]').forEach(el => el.classList.add('hidden'));
-        }
-    });
+    </script>
 
-    function openCommandModal(id, name) {
-        document.getElementById('commandModal').classList.remove('hidden');
-        document.getElementById('customerId').value = id;
-        document.getElementById('customerName').innerText = name;
-    }
-
-    function closeCommandModal() {
-        document.getElementById('commandModal').classList.add('hidden');
-    }
-</script>
-
-    <div id="commandModal"
-        class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+    <div id="commendModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
 
         <div class="bg-white w-full max-w-md rounded-lg shadow-xl">
 
@@ -216,26 +214,23 @@
                 <h2 class="font-semibold ">
                     <span id="customerName"></span>
                 </h2>
-                <button onclick="closeCommandModal()">✕</button>
+                <button onclick="closeCommendModal()">✕</button>
             </div>
 
             <!-- Form -->
-            <form method="POST" action="{{ route('customer.command') }}">
+            <form method="POST" action="{{ route('customer.commend') }}">
                 {{ csrfField() }}
 
                 <input type="hidden" name="customer_id" id="customerId">
 
                 <div class="p-6 space-y-4">
-                    <textarea name="command_name"
-                            rows="4"
-                            class="w-full border px-3 py-2 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter command"
-                            required></textarea>
+                    <textarea name="commend_name" rows="4"
+                        class="w-full border px-3 py-2 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="Enter commend" required></textarea>
                 </div>
 
                 <div class="px-6 pb-4 flex justify-end">
-                    <button type="submit"
-                        class="bg-black text-white px-4 py-2 rounded-md">
+                    <button type="submit" class="bg-black text-white px-4 py-2 rounded-md">
                         Submit
                     </button>
                 </div>
@@ -245,22 +240,22 @@
     </div>
 
     <script>
-        function openCommandModal(id, name) {
-            document.getElementById('commandModal').classList.remove('hidden');
+        function openCommendModal(id, name) {
+            document.getElementById('commendModal').classList.remove('hidden');
             document.getElementById('customerId').value = id;
             document.getElementById('customerName').innerText = name;
         }
 
-        function closeCommandModal() {
-            document.getElementById('commandModal').classList.add('hidden');
+        function closeCommendModal() {
+            document.getElementById('commendModal').classList.add('hidden');
         }
 
-        document.getElementById('commandModal').addEventListener('click', function (e) {
+        document.getElementById('commendModal').addEventListener('click', function (e) {
             if (e.target === this) {
-                closeCommandModal();
+                closeCommendModal();
             }
         });
     </script>
-    </body>
 
-    </html>
+@endslot
+@end
