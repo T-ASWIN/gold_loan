@@ -7,9 +7,18 @@ import Commend from '#models/commend'
 import { DateTime } from 'luxon'
 
 export default class CustomersController {
-  async index({ view }: HttpContext) {
+  async index({ view ,auth}: HttpContext) {
     const customers = await Customer.query().preload('commends').orderBy('created_at', 'desc')
-    return view.render('pages/customers/index', { customers })
+
+    const user = auth.user!
+
+    await user.load('role', (q) => q.preload('permissions'))
+
+    const permissions = user.role.permissions.map((p) => p.name) ?? []
+
+
+
+    return view.render('pages/customers/index', { customers, permissions })
   }
 
   async create({ view }: HttpContext) {
@@ -55,24 +64,21 @@ export default class CustomersController {
 
       return response.redirect().toRoute('customer.index')
     } catch (error) {
+      console.error('STORE ERROR:', error.message)  // 👈 add this
+    console.error('STACK:', error.stack)     
       return response.redirect().back()
     }
   }
 
-  async show({ view, params, auth }: HttpContext) {
+  async show({ view, params }: HttpContext) {
     const customer = await Customer.query()
       .preload('pledgeCards')
       .preload('commends')
       .where('id', params.id)
       .first()
 
-    const user = auth.user!
-
-    await user.load('role', (q) => q.preload('permissions'))
-
-    const permissions = user.role.permissions.map((p) => p.name) ?? []
-
-    return view.render('pages/customers/show', { customer, permissions })
+  
+    return view.render('pages/customers/show', { customer })
   }
 
   async storeCommend({ request, response }: HttpContext) {

@@ -1,0 +1,118 @@
+@component('components/layout/index')
+
+@slot('main')
+<div class="max-w-7xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
+      Manage User Roles
+    </h1>
+  </div>
+
+  <div class="mb-6 shadow-xl rounded-xl border-none overflow-visible">
+    <table class="min-w-full border-collapse bg-white">
+      <thead style="background-color: #A9B5D1;">
+        <tr>
+          <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+            Full Name
+          </th>
+          <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+            Email
+          </th>
+          <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
+            Current Role
+          </th>
+          <th class="px-8 py-5 text-right text-xs font-bold tracking-widest text-white uppercase">
+            Change Role
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @each((user, index) in users)
+        <tr class="{{ index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50' }} transition-colors hover:bg-blue-50/60 border-b last:border-0"
+          style="border-color: #F3F4F6;">
+
+          <td class="px-8 py-6 text-sm font-bold text-slate-900">
+            {{ user.fullName }}
+          </td>
+
+          <td class="px-8 py-6 text-sm text-slate-600">
+            {{ user.email }}
+          </td>
+
+          <td class="px-8 py-6 text-sm text-slate-600">
+            @if(user.role)
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+                {{ user.role.name }}
+              </span>
+            @else
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
+                No Role
+              </span>
+            @endif
+          </td>
+
+          <td class="px-8 py-6 text-sm text-right relative">
+  <div class="inline-block text-left">
+
+    <button onclick="toggleUserDropdown({{ user.id }})"
+      class="bg-white border px-4 py-2 rounded-md shadow-sm text-sm font-medium flex items-center gap-2 hover:bg-gray-50">
+      Action
+      <svg class="w-4 h-4 transition-transform" id="user-arrow-{{ user.id }}" fill="none"
+        stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+
+    <!-- Dropdown -->
+    <div id="user-dropdown-{{ user.id }}"
+      class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+
+      {{-- Edit user details --}}
+      <a href="{{ route('admin.users.editUser', [user.id]) }}"
+        class="block px-4 py-2 text-sm hover:bg-gray-100">
+        Edit
+      </a>
+
+      {{-- Edit role permissions --}}
+      <a href="{{ route('admin.users.editPermissions', [user.id]) }}"
+        class="block px-4 py-2 text-sm hover:bg-gray-100">
+        Edit Role
+      </a>
+
+    </div>
+  </div>
+</td>
+        </tr>
+        @end
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function toggleUserDropdown(id) {
+    const dropdown = document.getElementById(`user-dropdown-${id}`)
+    const arrow = document.getElementById(`user-arrow-${id}`)
+
+    // close all others first
+    document.querySelectorAll('[id^="user-dropdown-"]').forEach(el => {
+      if (el.id !== `user-dropdown-${id}`) {
+        el.classList.add('hidden')
+      }
+    })
+
+    dropdown?.classList.toggle('hidden')
+    arrow?.classList.toggle('rotate-180')
+  }
+
+  // close on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.inline-block')) {
+      document.querySelectorAll('[id^="user-dropdown-"]').forEach(el => el.classList.add('hidden'))
+      document.querySelectorAll('[id^="user-arrow-"]').forEach(el => el.classList.remove('rotate-180'))
+    }
+  })
+</script>
+@endslot
+@end

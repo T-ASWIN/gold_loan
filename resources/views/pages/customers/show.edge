@@ -2,13 +2,13 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit Customer</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body
-    class="bg-slate-100 font-sans antialiased text-slate-900 h-screen flex items-center justify-center overflow-hidden px-4">
+<body class="bg-slate-50 min-h-screen py-12">
 
     <div
         class="w-full max-w-5xl bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden flex flex-col max-h-[95vh]">
@@ -82,49 +82,33 @@
                 @endif
             </div>
 
-            <div>
-                <div class="mb-3">
-                    <h2 class="text-[11px] font-bold uppercase tracking-widest text-slate-400 px-1">Pledge Images</h2>
-                </div>
-
-                @if(customer.pledgeCards.length)
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @each(card in customer.pledgeCards)
-                    <div class="group relative">
-                        <div
-                            class="relative h-28 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm ring-2 ring-transparent group-hover:ring-indigo-300 transition-all duration-300 cursor-pointer">
-                            <img src="{{ asset(card.pledgeCard) }}"
-                                class="preview-image h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                alt="Pledge Card" />
-                            <div class="absolute inset-0 shadow-[inset_0_0_10px_rgba(0,0,0,0.05)] pointer-events-none">
-                            </div>
-                        </div>
-                    </div>
-                    @endeach
-                </div>
-                @else
-                <div class="bg-slate-50 rounded-xl p-6 text-center border-2 border-dashed border-slate-200">
-                    <p class="text-slate-500 text-sm font-medium">No digital assets uploaded.</p>
-                </div>
-                @endif
+            <label class="block text-sm font-semibold text-slate-700">Existing Pledge Cards</label>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        @each(card in customer.pledgeCards)
+            <div class="relative group h-32 border rounded-xl overflow-hidden" id="card-{{ card.id }}">
+                <img src="{{ asset(card.pledgeCard) }}" class="w-full h-full object-cover previewable cursor-pointer">
+                
+                <input type="checkbox" name="remove_image_ids[]" value="{{ card.id }}" class="hidden delete-checkbox">
+                
+                <button type="button" 
+                    onclick="markForDeletion({{ card.id }})"
+                    class="absolute top-1 right-1 bg-gray-200 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                    &times;
+                </button>
             </div>
-
-        </div>
+        @end
     </div>
 
-    <div id="imageModal"
-        class="fixed inset-0 bg-slate-950/95 backdrop-blur-md hidden items-center justify-center z-50 p-6 opacity-0 transition-all duration-300">
-        <button id="closeBtn"
-            class="absolute top-8 right-8 text-white/50 hover:text-white">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-        <img id="modalImage"
-            class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10" />
-    </div>
 
-    
+
+    <script>
+  console.log('app.js loaded:', typeof window.__appJsLoaded)
+  document.querySelectorAll('.preview-image').forEach((img, i) => {
+    console.log('found preview image', i, img.src)
+  })
+</script>
+
+
 </body>
 
 </html>

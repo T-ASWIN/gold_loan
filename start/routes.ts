@@ -5,6 +5,7 @@ import { middleware } from './kernel.js'
 const RegisterController = () => import('#controllers/auth/register_controller')
 const LoginController = () => import('#controllers/auth/login_controller')
 const LogoutController = () => import('#controllers/auth/logout_controller')
+const UsersController = () => import('#controllers/users_controller')
 router.on('/').redirect('/auth/login')
 router.on('/login').redirect('/auth/login')
 
@@ -74,3 +75,17 @@ router
   })
   .prefix('/auth')
   .as('auth')
+
+
+  router
+  .group(() => {
+    router.get('/', [UsersController, 'index']).as('index')
+    router.get('/:id/edit', [UsersController, 'editUser']).as('editUser')
+    router.put('/:id', [UsersController, 'updateUser']).as('updateUser')
+    router.get('/:id/permissions', [UsersController, 'edit']).as('editPermissions')
+    router.put('/:id/permissions', [UsersController, 'updatePermissions']).as('updatePermissions')
+  
+  })
+  .prefix('/admin/users')
+  .as('admin.users')
+  .use(middleware.auth())

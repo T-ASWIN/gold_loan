@@ -1,6 +1,6 @@
 import Permission from '#models/permission'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
-import Permissions from '../../app/enums/permissions.js'
+import {Permissions} from '#enums/permissions'
 import Role from '#models/role'
 
 export default class extends BaseSeeder {

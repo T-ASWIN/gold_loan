@@ -1,0 +1,127 @@
+@component('components/layout/index')
+
+@slot('main')
+<div class="max-w-2xl mx-auto">
+
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Edit User</h1>
+      <p class="text-slate-500 text-sm mt-1">Update user details and role</p>
+    </div>
+    <a href="{{ route('admin.users.index') }}"
+      class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+      ← Back
+    </a>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-8">
+    <form action="{{ route('admin.users.updateUser', [editUser.id]) }}?_method=PUT" method="POST">
+      {{ csrfField() }}
+
+      <div class="space-y-6 mb-8">
+
+        {{-- Full Name --}}
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+            Full Name
+          </label>
+          <input
+            type="text"
+            name="full_name"
+            value="{{ editUser.fullName }}"
+            required
+            class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all shadow-sm"
+          />
+        </div>
+
+        {{-- Email --}}
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+            Email Address
+          </label>
+          <input
+            type="email"
+            name="email"
+            value="{{ editUser.email }}"
+            required
+            class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all shadow-sm"
+          />
+        </div>
+
+        {{-- Role Dropdown --}}
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+            Role
+          </label>
+          <select
+            name="role_id"
+            id="role-select"
+            onchange="updatePermissionPreview(this.value)"
+            class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all shadow-sm"
+          >
+            @each(role in allRoles)
+            <option
+              value="{{ role.id }}"
+              data-permissions="{{ JSON.stringify(role.permissions.map(p => p.name)) }}"
+              {{ editUser.roleId === role.id ? 'selected' : '' }}
+            >
+              {{ role.name }}
+            </option>
+            @endeach
+          </select>
+        </div>
+
+        {{-- Permission Preview --}}
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+            Permissions for selected role
+          </label>
+          <div id="permission-preview" class="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl border border-slate-100 min-h-[52px]">
+            {{-- filled by JS --}}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end">
+        <button type="submit"
+          class="px-10 py-3 bg-black text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">
+          Save Changes
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+  function updatePermissionPreview(roleId) {
+    const select = document.getElementById('role-select')
+    const selected = select.querySelector(`option[value="${roleId}"]`)
+    const preview = document.getElementById('permission-preview')
+
+    if (!selected) return
+
+    const permissions = JSON.parse(selected.dataset.permissions || '[]')
+
+    if (permissions.length === 0) {
+      preview.innerHTML = '<span class="text-slate-400 text-xs italic">No permissions for this role</span>'
+      return
+    }
+
+    preview.innerHTML = permissions.map(p => `
+      <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+        ${p}
+      </span>
+    `).join('')
+  }
+
+  // Run on page load to show current role's permissions
+  document.addEventListener('DOMContentLoaded', () => {
+    const select = document.getElementById('role-select')
+    updatePermissionPreview(select.value)
+  })
+</script>
+
+@endslot
+@end

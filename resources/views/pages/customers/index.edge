@@ -6,7 +6,7 @@
             <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
                 Customers
             </h1>
-             @if(permissions && permissions.includes('create'))
+             @if(permissions && permissions.includes('create_customer'))
             <div class="flex gap-2">
                 <a href="{{ route('customer.create') }}"
                     class="bg-black text-white px-8 py-2 rounded-full font-bold shadow-md hover:bg-slate-800 transition-colors">
@@ -113,7 +113,7 @@
                                 
                                 <div id="dropdown-{{ customer.id }}"
                                     class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
-                                    @if(permissions && permissions.include('edit'))
+                                    @if(permissions && permissions.includes('edit_customer'))
                                     <a href="{{ route('customer.edit', [customer.id]) }}"
                                         class="block px-4 py-2 text-sm hover:bg-gray-100">
                                         Edit
@@ -125,14 +125,14 @@
                                         class="block px-4 py-2 text-sm hover:bg-gray-100">
                                         view
                                     </a>
-                                    @if(permissions && permissions.includes('commend'))
+                                    @if(permissions && permissions.includes('comment_customer'))
                                     <a href="#" onclick="openCommendModal({{ customer.id}}, '{{customer.name}}')"
                                         class="block px-4 py-2 text-sm hover:bg-gray-100">
                                         Commend
                                     </a>
                                     @endif
                                     
-                                    @if(permissions && permissions.includes('delete'))
+                                    @if(permissions && permissions.includes('delete_customer'))
                                     <form action="{{ route('customer.destroy', [customer.id]) }}?_method=DELETE"
                                         method="POST" class="inline">
                                         {{ csrfField() }}
@@ -238,6 +238,7 @@
 
         </div>
     </div>
+
 
     <script>
         function openCommendModal(id, name) {
