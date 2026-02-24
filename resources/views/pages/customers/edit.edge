@@ -1,196 +1,172 @@
-<!DOCTYPE html>
-<html lang="en">
+@component('components/layout/index')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Customer</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@slot('main')
+<div class="max-w-4xl mx-auto p-10 border rounded-2xl shadow-sm"
+    style="background-color: #fff7ed; border-color: #fb923c;">
 
-<body class="bg-slate-50 min-h-screen py-12">
+    <div class="flex justify-between items-end mb-8">
+        <div class="space-y-1">
+            <span class="text-xl font-bold uppercase text-orange-400">Edit Profile</span>
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
+                {{ customer.name }}
+            </h1>
+        </div>
+        <a href="{{ route('customer.index') }}"
+            class="text-sm font-medium text-slate-500 hover:text-orange-500 transition-colors">
+            Cancel
+        </a>
+    </div>
 
-    <div class="max-w-4xl mx-auto p-10 border rounded-2xl shadow-sm"
-        style="background-color: #eeefef; border-color: #65696e;">
+    <form action="{{ route('customer.update', [customer.id]) }}?_method=PUT" enctype="multipart/form-data" method="POST"
+        class="space-y-6">
+        {{ csrfField() }}
 
-        <div class="flex justify-between items-end mb-8">
-            <div class="space-y-1">
-                <span class="text-xl font-bold uppercase text-slate-600">Edit Profile</span>
-                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
-                    {{ customer.name }}
-                </h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+
+            <div class="space-y-2">
+                <label for="name" class="block text-sm font-semibold text-slate-700">Full Name</label>
+                <input type="text" name="name" id="name" value="{{ old('name') || customer.name }}" required
+                    class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400 shadow-sm bg-white">
             </div>
-            <a href="{{ route('customer.index') }}"
-                class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
-                Cancel
-            </a>
+
+            <div class="space-y-2">
+                <label for="email" class="block text-sm font-semibold text-slate-700">Email Address</label>
+                <input type="email" name="email" id="email" value="{{ old('email') || customer.email }}" required
+                    class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400 shadow-sm bg-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="phoneNumber" class="block text-sm font-semibold text-slate-700">Phone Number</label>
+                <input type="text" name="phoneNumber" id="phoneNumber"
+                    value="{{ old('phoneNumber') || customer.phoneNumber || '' }}"
+                    class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400 shadow-sm bg-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="address" class="block text-sm font-semibold text-slate-700">Address</label>
+                <textarea name="address" id="address"
+                    class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400 shadow-sm bg-white">{{ old('address') || customer.address || '' }}</textarea>
+            </div>
+
+            <div class="space-y-4 md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700">Commends</label>
+
+                <!-- Existing Commends -->
+                <div class="space-y-2">
+                    @each(cmd in customer.commends)
+                    <div class="flex items-center gap-2" id="cmd-{{ cmd.id }}">
+                        <input type="text" value="{{ cmd.commendName }}" name="existing_commends[{{cmd.id}}]"
+                            class="w-full px-4 py-2 rounded-lg border border-orange-200 bg-orange-50 text-slate-700">
+
+                        <input type="checkbox" name="remove_commend_ids[]" value="{{ cmd.id }}"
+                            class="hidden delete-commend">
+
+                        <button type="button" onclick="markCommendDelete({{ cmd.id }})"
+                            class="text-red-500 text-lg font-bold px-3">
+                            ×
+                        </button>
+                    </div>
+                    @end
+                </div>
+
+                <!-- New Commends -->
+                <div id="commend-container" class="space-y-3"></div>
+
+                <button type="button" onclick="addCommendField()"
+                    class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm transition-colors">
+                    + Add Commend
+                </button>
+            </div>
+
+            <div class="space-y-4 md:col-span-2">
+                <label class="block text-sm font-semibold text-slate-700">Existing Pledge Cards</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    @each(card in customer.pledgeCards)
+                    <div class="relative group h-32 border border-orange-200 rounded-xl overflow-hidden"
+                        id="card-{{ card.id }}">
+                        <img src="{{ asset(card.pledgeCard) }}"
+                            class="w-full h-full object-cover previewable cursor-pointer">
+
+                        <input type="checkbox" name="remove_image_ids[]" value="{{ card.id }}"
+                            class="hidden delete-checkbox">
+
+                        <button type="button" onclick="markForDeletion({{ card.id }})"
+                            class="absolute top-1 right-1 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                            &times;
+                        </button>
+                    </div>
+                    @end
+                </div>
+
+                <div class="pt-4 border-t border-orange-100">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Add New Images</label>
+                    <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4 mb-4"></div>
+
+                    <input type="file" name="pledgecards[]" id="pledgecard_input" class="hidden" multiple
+                        accept="image/*">
+                    <button type="button" id="upload-trigger-btn"
+                        class="px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-bold transition-colors">
+                        Upload More
+                    </button>
+                </div>
+            </div>
+
         </div>
 
-        <form action="{{ route('customer.update', [customer.id]) }}?_method=PUT" enctype="multipart/form-data" method="POST" class="space-y-6">
-            {{ csrfField() }}
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                
-                <div class="space-y-2">
-                    <label for="name" class="block text-sm font-semibold text-slate-700">Full Name</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') || customer.name }}" required
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-                </div>
-
-                <div class="space-y-2">
-                    <label for="email" class="block text-sm font-semibold text-slate-700">Email Address</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') || customer.email }}" required
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-                </div>
-
-                <div class="space-y-2">
-                    <label for="phoneNumber" class="block text-sm font-semibold text-slate-700">Phone Number</label>
-                    <input type="text" name="phoneNumber" id="phoneNumber"
-                        value="{{ old('phoneNumber') || customer.phoneNumber || '' }}"
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">
-                </div>
-
-                <div class="space-y-2">
-                    <label for="address" class="block text-sm font-semibold text-slate-700"> Address</label>
-                    <textarea name="address" id="address" 
-                        class="block w-full px-4 py-3 rounded-xl border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all placeholder:text-slate-400 shadow-sm">{{ old('address') || customer.address || '' }}</textarea>
-                </div>
-
-                <div class="space-y-4 md:col-span-2">
-    <label class="block text-sm font-semibold text-slate-700">Commends</label>
-
-    <!-- Existing Commends -->
-    <div class="space-y-2">
-        @each(cmd in customer.commends)
-        <div class="flex items-center gap-2" id="cmd-{{ cmd.id }}">
-            <input type="text"
-                value="{{ cmd.commendName }}"
-                name="existing_commends[{{cmd.id}}]"
-                class="w-full px-4 py-2 rounded-lg border bg-slate-100 text-slate-700">
-
-            <input type="checkbox"
-                name="remove_commend_ids[]"
-                value="{{ cmd.id }}"
-                class="hidden delete-commend">
-
-            <button type="button"
-                onclick="markCommendDelete({{ cmd.id }})"
-                class="text-red-500 text-lg font-bold px-3">
-                ×
+        <div class="pt-6 flex justify-center">
+            <button type="button" id="submit-all"
+                class="px-12 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all active:scale-[0.98] cursor-pointer">
+                Save Changes
             </button>
         </div>
-        @end
-    </div>
-
-    <!-- New Commends -->
-    <div id="commend-container" class="space-y-3"></div>
-
-    <button type="button"
-        onclick="addCommendField()"
-        class="px-6 py-2 bg-slate-900 text-white rounded-lg text-sm">
-        + Add Commend
-    </button>
+    </form>
 </div>
 
-    <div class="space-y-4 md:col-span-2">
-    <label class="block text-sm font-semibold text-slate-700">Existing Pledge Cards</label>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        @each(card in customer.pledgeCards)
-            <div class="relative group h-32 border rounded-xl overflow-hidden" id="card-{{ card.id }}">
-                <img src="{{ asset(card.pledgeCard) }}" class="w-full h-full object-cover previewable cursor-pointer">
-                
-                <input type="checkbox" name="remove_image_ids[]" value="{{ card.id }}" class="hidden delete-checkbox">
-                
+<div id="image-modal" class="fixed inset-0 bg-gray-700 bg-opacity-70 hidden items-center justify-center z-[9999]">
+    <div id="modal-box" class="bg-white rounded-xl flex items-center justify-center p-4"
+        style="width: 75%; height: 75%;">
+        <img id="modal-img" class="rounded-lg" style="width: 85%; height: 85%; object-fit: contain;" />
+    </div>
+</div>
+
+<script>
+    let commendCount = 0;
+
+    function addCommendField(value = '') {
+        commendCount++;
+        const container = document.getElementById('commend-container');
+        const div = document.createElement('div');
+        div.className = "flex items-center gap-2";
+        div.innerHTML = `
+                <input 
+                    type="text" 
+                    name="commends[]" 
+                    value="${value}"
+                    placeholder="New Commend ${commendCount}"
+                    class="w-full px-4 py-2 rounded-lg border border-orange-200 bg-white">
                 <button type="button" 
-                    onclick="markForDeletion({{ card.id }})"
-                    class="absolute top-1 right-1 bg-gray-200 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
-                    &times;
+                    onclick="this.parentElement.remove()"
+                    class="text-red-500 text-lg font-bold px-3">
+                    ×
                 </button>
-            </div>
-        @end
-    </div>
+            `;
+        container.appendChild(div);
+    }
 
-        <div class="pt-4 border-t border-slate-200">
-        <label class="block text-sm font-semibold text-slate-700 mb-2">Add New Images</label>
-        <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4 mb-4"></div>
-        
-        <input type="file" name="pledgecards[]" id="pledgecard_input" class="hidden" multiple accept="image/*">
-        <button type="button" id="upload-trigger-btn" class="px-4 py-2 bg-slate-200 rounded-lg text-sm font-bold">
-            Upload More
-        </button>
-    </div>
-</div>
-                
-            </div>
-
-            <div class="pt-6 flex justify-center">
-                <button type="button" id="submit-all"
-                    class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
-                    Save Changes
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div id="image-modal" class="fixed inset-0 bg-gray-700 bg-opacity-70 hidden items-center justify-center z-[9999]">
-    
-    <div id="modal-box" 
-     class="bg-white rounded-xl flex items-center justify-center p-4"
-     style="width: 75%; height: 75%;">
-    
-    <img id="modal-img" 
-         class="rounded-lg"
-         style="width: 85%; height: 85%; object-fit: contain;" />
-</div>
-
-</div>
-
-<script>
-let commendCount = 0;
-
-// ✅ Add new commend input
-function addCommendField(value = '') {
-    commendCount++;
-
-    const container = document.getElementById('commend-container');
-
-    const div = document.createElement('div');
-    div.className = "flex items-center gap-2";
-
-    div.innerHTML = `
-        <input 
-            type="text" 
-            name="commends[]" 
-            value="${value}"
-            placeholder="New Commend ${commendCount}"
-            class="w-full px-4 py-2 rounded-lg border border-slate-300">
-
-        <button type="button" 
-            onclick="this.parentElement.remove()"
-            class="text-red-500 text-lg font-bold px-3">
-            ×
-        </button>
-    `;
-
-    container.appendChild(div);
-}
-
-function markCommendDelete(id) {
-    const wrapper = document.getElementById(`cmd-${id}`);
-    const checkbox = wrapper.querySelector('.delete-commend');
-
-    checkbox.checked = true;
-    wrapper.classList.add('hidden');
-}
+    function markCommendDelete(id) {
+        const wrapper = document.getElementById(`cmd-${id}`);
+        const checkbox = wrapper.querySelector('.delete-commend');
+        checkbox.checked = true;
+        wrapper.classList.add('hidden');
+    }
 </script>
 
 <script>
-  console.log('app.js loaded:', typeof window.__appJsLoaded)
-  document.querySelectorAll('.preview-image').forEach((img, i) => {
-    console.log('found preview image', i, img.src)
-  })
+    console.log('app.js loaded:', typeof window.__appJsLoaded)
+    document.querySelectorAll('.preview-image').forEach((img, i) => {
+        console.log('found preview image', i, img.src)
+    })
 </script>
 
-</body>
-
-</html>
+@endslot
+@end

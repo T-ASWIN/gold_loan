@@ -1,154 +1,144 @@
-<!DOCTYPE html>
-<html lang="en">
+@component('components/layout/index')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add New Customer</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@slot('main')
 
-<body class="bg-[#f8fafc] min-h-screen py-12 px-4">
+<div class="max-w-4xl mx-auto bg-white p-10 rounded-xl shadow-sm border border-orange-100">
 
-    <div class="max-w-4xl mx-auto bg-white p-10 rounded-xl shadow-sm border border-slate-100">
-        
-        <div class="mb-10">
-            <h1 class="text-3xl font-semibold text-slate-800">Customer Registration</h1>
-        </div>
-
-        <form action="{{ route('customer.store') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
-            {{ csrfField() }}
-
-            <section class="space-y-6">
-                <div class="flex items-center gap-4">
-                    <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Customer Info</h2>
-                    <div class="h-px w-full bg-slate-100"></div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    <div class="space-y-2">
-                        <label for="name" class="block text-sm font-medium text-slate-700">Full Name</label>
-                        <input type="text" name="name" id="name" value="{{ old('name') || '' }}" required placeholder="Enter full name"
-                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
-                        @if(flashMessages.has('errors.name'))
-                            <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.name') }}</p>
-                        @end
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
-                        <input type="email" name="email" id="email" value="{{ old('email') || '' }}" required placeholder="Enter email address"
-                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
-                        @if(flashMessages.has('errors.email'))
-                            <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.email') }}</p>
-                        @end
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="phoneNumber" class="block text-sm font-medium text-slate-700">Phone Number</label>
-                        <input type="text" name="phoneNumber" id="phoneNumber" value="{{ old('phoneNumber') || '' }}" placeholder="Enter phone number"
-                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="address" class="block text-sm font-medium text-slate-700">Address</label>
-                        <input type="text" name="address" id="address" value="{{ old('address') || '' }}" placeholder="Enter address"
-                            class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400">
-                    </div>
-                </div>
-            </section>
-
-            <section class="space-y-6">
-                <div class="flex items-center gap-4">
-                    <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Commends</h2>
-                    <div class="h-px w-full bg-slate-100"></div>
-                </div>
-
-                <div id="commend-container" class="space-y-3">
-                    <div class="flex items-center gap-2 group">
-                        <input type="text" name="commends[]" placeholder="Commend 1"
-                            class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
-                        <button type="button" class="p-3 text-slate-400 hover:text-red-500 bg-slate-50 rounded-lg border border-slate-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="button" onclick="addCommendField()"
-                    class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
-                    <span class="mr-2">+</span> Add Commend
-                </button>
-            </section>
-
-            <section class="space-y-6">
-    <div class="flex items-center gap-4">
-        <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Attachments</h2>
-        <div class="h-px w-full bg-slate-100"></div>
+    <div class="mb-10">
+        <h1 class="text-3xl font-semibold text-slate-800">Customer Registration</h1>
     </div>
 
-    <!-- Preview Grid -->
-    <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+    <form action="{{ route('customer.store') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
+        {{ csrfField() }}
 
-    <div class="flex items-center gap-4">
-        <!-- Hidden File Input -->
-        <input type="file" 
-               name="pledgecards[]" 
-               id="pledgecard_input" 
-               class="hidden" 
-               accept="image/*"
-               multiple>
-
-        <!-- Trigger Button -->
-        <button type="button" 
-            id="upload-trigger-btn"
-            class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
-            Upload Images
-        </button>
-
-        <span class="text-sm text-slate-500">You can upload multiple images</span>
-    </div>
-</section>
-
-            <div class="pt-10 flex items-center justify-end gap-4 border-t border-slate-100">
-                <a href="{{ route('customer.index') }}" 
-                    class="px-8 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all">
-                    Cancel
-                </a>
-                <button type="button" id="submit-all"
-                    class="px-12 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-200 transition-all active:scale-[0.98] cursor-pointer">
-                    Create Customer
-                </button>
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Customer Info</h2>
+                <div class="h-px w-full bg-orange-100"></div>
             </div>
-        </form>
-    </div>
 
-    <script>
-        let commendCount = 1;
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div class="space-y-2">
+                    <label for="name" class="block text-sm font-medium text-slate-700">Full Name</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') || '' }}" required
+                        placeholder="Enter full name"
+                        class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
+                    @if(flashMessages.has('errors.name'))
+                    <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.name') }}</p>
+                    @end
+                </div>
 
-        function addCommendField(value = '') {
-            commendCount++;
-            const container = document.getElementById('commend-container');
-            const div = document.createElement('div');
-            div.className = "flex items-center gap-2 group";
+                <div class="space-y-2">
+                    <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" name="email" id="email" value="{{ old('email') || '' }}" required
+                        placeholder="Enter email address"
+                        class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
+                    @if(flashMessages.has('errors.email'))
+                    <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.email') }}</p>
+                    @end
+                </div>
 
-            div.innerHTML = `
+                <div class="space-y-2">
+                    <label for="phoneNumber" class="block text-sm font-medium text-slate-700">Phone Number</label>
+                    <input type="text" name="phoneNumber" id="phoneNumber" value="{{ old('phoneNumber') || '' }}"
+                        placeholder="Enter phone number"
+                        class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
+                </div>
+
+                <div class="space-y-2">
+                    <label for="address" class="block text-sm font-medium text-slate-700">Address</label>
+                    <input type="text" name="address" id="address" value="{{ old('address') || '' }}"
+                        placeholder="Enter address"
+                        class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Commends</h2>
+                <div class="h-px w-full bg-orange-100"></div>
+            </div>
+
+            <div id="commend-container" class="space-y-3">
+                <div class="flex items-center gap-2 group">
+                    <input type="text" name="commends[]" placeholder="Commend 1"
+                        class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-400 transition-all">
+                    <button type="button"
+                        class="p-3 text-slate-400 hover:text-red-500 bg-orange-50 rounded-lg border border-orange-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" onclick="addCommendField()"
+                class="px-12 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all active:scale-[0.98] cursor-pointer">
+                <span class="mr-2">+</span> Add Commend
+            </button>
+        </section>
+
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <h2 class="text-xl font-semibold text-slate-800 whitespace-nowrap">Attachments</h2>
+                <div class="h-px w-full bg-orange-100"></div>
+            </div>
+
+            <div id="preview-grid" class="hidden grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+
+            <div class="flex items-center gap-4">
+                <input type="file" name="pledgecards[]" id="pledgecard_input" class="hidden" accept="image/*" multiple>
+
+                <button type="button" id="upload-trigger-btn"
+                    class="px-12 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all active:scale-[0.98] cursor-pointer">
+                    Upload Images
+                </button>
+
+                <span class="text-sm text-slate-500">You can upload multiple images</span>
+            </div>
+        </section>
+
+        <div class="pt-10 flex items-center justify-end gap-4 border-t border-orange-100">
+            <a href="{{ route('customer.index') }}"
+                class="px-8 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-orange-50 transition-all">
+                Cancel
+            </a>
+            <button type="button" id="submit-all"
+                class="px-12 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all active:scale-[0.98] cursor-pointer">
+                Create Customer
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let commendCount = 1;
+
+    function addCommendField(value = '') {
+        commendCount++;
+        const container = document.getElementById('commend-container');
+        const div = document.createElement('div');
+        div.className = "flex items-center gap-2 group";
+
+        div.innerHTML = `
                 <input type="text" name="commends[]" value="${value}" placeholder="Commend ${commendCount}"
-                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 transition-all">
+                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-orange-400 transition-all">
                 <button type="button" onclick="removeCommend(this)"
-                    class="p-3 text-slate-400 hover:text-red-500 bg-slate-50 rounded-lg border border-slate-200">
+                    class="p-3 text-slate-400 hover:text-red-500 bg-orange-50 rounded-lg border border-orange-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                 </button>
             `;
-            container.appendChild(div);
-        }
+        container.appendChild(div);
+    }
 
-        function removeCommend(button) {
-            button.parentElement.remove();
-        }
-    </script>
-</body>
-</html>
+    function removeCommend(button) {
+        button.parentElement.remove();
+    }
+</script>
+@endslot
+@end

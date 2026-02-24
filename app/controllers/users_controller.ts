@@ -4,19 +4,39 @@ import Role from '#models/role'
 import Permission from '#models/permission'
 
 export default class UsersController {
-
-async index ({view,auth}:HttpContext){
-    const user =auth.user!
-    await user.load('role',(q) => q.preload('permissions'))
+  async index({ view, auth }: HttpContext) {
+    const user = auth.user!
+    await user.load('role', (q) => q.preload('permissions'))
     const permissions = user.role?.permissions?.map((p) => p.name) ?? []
 
     const users = await User.query().preload('role')
     const roles = await Role.all()
 
-    return view.render('pages/admin/edit_roles', {users, roles, permissions})
+    return view.render('pages/admin/edit_roles', { users, roles, permissions })
+  }
 
-}
+  async create({ view }: HttpContext) {
+    const roles = await Role.all()
+    return view.render('pages/admin/create', { roles })
+  }
 
+  async store({ request, response }: HttpContext) {
+    const { full_name, email, password, role_id } = request.only([
+      'full_name',
+      'email',
+      'password',
+      'role_id',
+    ])
+
+    await User.create({
+      fullName: full_name,
+      email,
+      password,
+      roleId: Number(role_id),
+    })
+
+    return response.redirect().toRoute('admin.users.index')
+  }
 
   async edit({ view, params }: HttpContext) {
     const user = await User.query()
@@ -35,41 +55,35 @@ async index ({view,auth}:HttpContext){
   }
 
   async editUser({ view, params }: HttpContext) {
-  const editUser = await User.query()
-    .where('id', params.id)
-    .preload('role', (q) => q.preload('permissions'))
-    .firstOrFail()
+    const editUser = await User.query()
+      .where('id', params.id)
+      .preload('role', (q) => q.preload('permissions'))
+      .firstOrFail()
 
-  const allRoles = await Role.query().preload('permissions')
+    const allRoles = await Role.query().preload('permissions')
 
-  return view.render('pages/admin/edit_user', {
-    editUser,
-    allRoles,
-  })
-}
+    return view.render('pages/admin/edit_user', {
+      editUser,
+      allRoles,
+    })
+  }
 
-async updateUser({ params, request, response }: HttpContext) {
-  const editUser = await User.query()
-    .where('id', params.id)
-    .preload('role')
-    .firstOrFail()
+  async updateUser({ params, request, response }: HttpContext) {
+    const editUser = await User.query().where('id', params.id).preload('role').firstOrFail()
 
-  const { full_name, email, role_id } = request.only(['full_name', 'email', 'role_id'])
+    const { full_name, email, role_id } = request.only(['full_name', 'email', 'role_id'])
 
-  // Update user details
-  editUser.fullName = full_name
-  editUser.email = email
-  editUser.roleId = Number(role_id)
-  await editUser.save()
+    // Update user details
+    editUser.fullName = full_name
+    editUser.email = email
+    editUser.roleId = Number(role_id)
+    await editUser.save()
 
-  return response.redirect().toRoute('admin.users.index')
-}
+    return response.redirect().toRoute('admin.users.index')
+  }
 
   async updatePermissions({ params, request, response }: HttpContext) {
-    const user = await User.query()
-      .where('id', params.id)
-      .preload('role')
-      .firstOrFail()
+    const user = await User.query().where('id', params.id).preload('role').firstOrFail()
 
     const { permission_ids } = request.only(['permission_ids'])
 
@@ -83,5 +97,4 @@ async updateUser({ params, request, response }: HttpContext) {
 
     return response.redirect().toRoute('admin.users.index')
   }
-
 }

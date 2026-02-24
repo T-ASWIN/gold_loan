@@ -9,12 +9,12 @@
       <p class="text-slate-500 text-sm mt-1">Update user details and role</p>
     </div>
     <a href="{{ route('admin.users.index') }}"
-      class="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+      class="text-sm font-medium text-slate-500 hover:text-orange-500 transition-colors">
       ← Back
     </a>
   </div>
 
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-8">
+  <div class="bg-white rounded-2xl border border-orange-100 shadow-xl p-8">
     <form action="{{ route('admin.users.updateUser', [editUser.id]) }}?_method=PUT" method="POST">
       {{ csrfField() }}
 
@@ -22,49 +22,32 @@
 
         {{-- Full Name --}}
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+          <label class="block text-xs font-bold uppercase tracking-widest text-orange-400">
             Full Name
           </label>
-          <input
-            type="text"
-            name="full_name"
-            value="{{ editUser.fullName }}"
-            required
-            class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all shadow-sm"
-          />
+          <input type="text" name="full_name" value="{{ editUser.fullName }}" required
+            class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all shadow-sm" />
         </div>
 
         {{-- Email --}}
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+          <label class="block text-xs font-bold uppercase tracking-widest text-orange-400">
             Email Address
           </label>
-          <input
-            type="email"
-            name="email"
-            value="{{ editUser.email }}"
-            required
-            class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all shadow-sm"
-          />
+          <input type="email" name="email" value="{{ editUser.email }}" required
+            class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all shadow-sm" />
         </div>
 
         {{-- Role Dropdown --}}
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+          <label class="block text-xs font-bold uppercase tracking-widest text-orange-400">
             Role
           </label>
-          <select
-            name="role_id"
-            id="role-select"
-            onchange="updatePermissionPreview(this.value)"
-            class="block w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 focus:ring-2 focus:ring-slate-900 focus:border-slate-900 transition-all shadow-sm"
-          >
+          <select name="role_id" id="role-select" onchange="updatePermissionPreview(this.value)"
+            class="block w-full px-4 py-3 rounded-xl border border-orange-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all shadow-sm">
             @each(role in allRoles)
-            <option
-              value="{{ role.id }}"
-              data-permissions="{{ JSON.stringify(role.permissions.map(p => p.name)) }}"
-              {{ editUser.roleId === role.id ? 'selected' : '' }}
-            >
+            <option value="{{ role.id }}" data-permissions="{{ JSON.stringify(role.permissions.map(p => p.name)) }}" {{
+              editUser.roleId===role.id ? 'selected' : '' }}>
               {{ role.name }}
             </option>
             @endeach
@@ -73,10 +56,11 @@
 
         {{-- Permission Preview --}}
         <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-widest text-slate-400">
+          <label class="block text-xs font-bold uppercase tracking-widest text-orange-400">
             Permissions for selected role
           </label>
-          <div id="permission-preview" class="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl border border-slate-100 min-h-[52px]">
+          <div id="permission-preview"
+            class="flex flex-wrap gap-2 p-4 bg-orange-50 rounded-xl border border-orange-100 min-h-[52px]">
             {{-- filled by JS --}}
           </div>
         </div>
@@ -85,7 +69,7 @@
 
       <div class="flex justify-end">
         <button type="submit"
-          class="px-10 py-3 bg-black text-white rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg">
+          class="px-10 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200">
           Save Changes
         </button>
       </div>
@@ -105,18 +89,17 @@
     const permissions = JSON.parse(selected.dataset.permissions || '[]')
 
     if (permissions.length === 0) {
-      preview.innerHTML = '<span class="text-slate-400 text-xs italic">No permissions for this role</span>'
+      preview.innerHTML = '<span class="text-orange-300 text-xs italic">No permissions for this role</span>'
       return
     }
 
     preview.innerHTML = permissions.map(p => `
-      <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+      <span class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-600">
         ${p}
       </span>
     `).join('')
   }
 
-  // Run on page load to show current role's permissions
   document.addEventListener('DOMContentLoaded', () => {
     const select = document.getElementById('role-select')
     updatePermissionPreview(select.value)
