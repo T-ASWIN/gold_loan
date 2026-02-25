@@ -17,26 +17,59 @@ export default class CustomerService {
     return localPath
   }
 
-  static async create(data: any, filePaths: string[], trx: TransactionClientContract) {
-    console.log('File Paths received in Service:', filePaths)
-    const customer = await Customer.create(
-      {
-        name: data.name,
-        email: data.email,
-        phoneNumber: data.phoneNumber,
-        address: data.address,
-      },
-      { client: trx }
-    )
+  static async create(
+    data: any,
+    pledgecards: MultipartFile[] | undefined,
+    commends: string[] | undefined
+  ) {
+    return await db.transaction(async (trx) => {
+      // 1️⃣ Store Files
+      const filePaths =
+        pledgecards && Array.isArray(pledgecards)
+          ? await Promise.all(pledgecards.map((file) => this.storePlegdeCard(file)))
+          : []
 
-    if (filePaths.length > 0) {
-      const pledgeData = filePaths.map((path) => ({
-        pledgeCard: path,
-      }))
+      // 2️⃣ Create Customer
+      const customer = await Customer.create(
+        {
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+        },
+        { client: trx }
+      )
 
-      await customer.related('pledgeCards').createMany(pledgeData, { client: trx })
-    }
-    return customer
+      // 3️⃣ Store Pledge Cards
+      if (filePaths.length > 0) {
+        const pledgeData = filePaths.map((path) => ({
+          pledgeCard: path,
+        }))
+
+        await customer.related('pledgeCards').createMany(pledgeData, {
+          client: trx,
+        })
+      }
+
+      // 4️⃣ Insert Commends
+      if (commends && commends.length) {
+        const filteredCommends = commends.filter((commend) => commend.trim() !== '')
+
+        await Promise.all(
+          filteredCommends.map((commend) =>
+            trx.insertQuery().table('commends').insert({
+              customer_id: customer.id,
+              commend_name: commend,
+              scheduled_at: new Date(),
+              created_at: new Date(),
+              updated_at: new Date(),
+            })
+          )
+        )
+      }
+
+      return customer
+    })
   }
 
   static async update(

@@ -7,7 +7,7 @@ import Commend from '#models/commend'
 import { DateTime } from 'luxon'
 
 export default class CustomersController {
-  async index({ view ,auth}: HttpContext) {
+  async index({ view, auth }: HttpContext) {
     const customers = await Customer.query().preload('commends').orderBy('created_at', 'desc')
 
     const user = auth.user!
@@ -15,8 +15,6 @@ export default class CustomersController {
     await user.load('role', (q) => q.preload('permissions'))
 
     const permissions = user.role.permissions.map((p) => p.name) ?? []
-
-
 
     return view.render('pages/customers/index', { customers, permissions })
   }
@@ -26,59 +24,16 @@ export default class CustomersController {
   }
 
   async store({ request, response }: HttpContext) {
-    console.log(request.only(['name', 'email', 'phoneNumber', 'address']))
     try {
       const { pledgecards, commends, ...customerData } =
         await request.validateUsing(createCustomerValidator)
 
-      console.log('commends:', commends)
-
-      const filePaths =
-        pledgecards && Array.isArray(pledgecards)
-          ? await Promise.all(pledgecards.map((file) => CustomerService.storePlegdeCard(file)))
-          : []
-
-      await db.transaction(async (trx) => {
-        const customer = await CustomerService.create(customerData, filePaths, trx)
-
-        console.log('filtered commends before insert:', commends)
-
-        if (commends && commends.length) {
-          const customer_commends = commends.filter((commend) => commend.trim() !== '')
-
-          console.log('after filter:', customer_commends)
-
-          await Promise.all(
-            customer_commends.map((commend) => {
-              return trx.insertQuery().table('commends').insert({
-                customer_id: customer.id,
-                commend_name: commend,
-                scheduled_at: new Date(),
-                created_at: new Date(),
-                updated_at: new Date(),
-              })
-            })
-          )
-        }
-      })
+      await CustomerService.create(customerData, pledgecards, commends)
 
       return response.redirect().toRoute('customer.index')
     } catch (error) {
-      console.error('STORE ERROR:', error.message)  // 👈 add this
-    console.error('STACK:', error.stack)     
       return response.redirect().back()
     }
-  }
-
-  async show({ view, params }: HttpContext) {
-    const customer = await Customer.query()
-      .preload('pledgeCards')
-      .preload('commends')
-      .where('id', params.id)
-      .first()
-
-  
-    return view.render('pages/customers/show', { customer })
   }
 
   async storeCommend({ request, response }: HttpContext) {

@@ -3,7 +3,7 @@ import type { NextFn } from '@adonisjs/core/types/http'
 
 export default class PermissionsMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
-    const { auth } = ctx
+    const { auth, view } = ctx
 
     try {
       // silently check if user is logged in, don't throw if not
@@ -13,10 +13,12 @@ export default class PermissionsMiddleware {
         await auth.user.load('role', (roleQuery) => {
           roleQuery.preload('permissions')
         })
+
+        view.share({
+          currentRole: auth.user.role?.name ?? null,
+        })
       }
-    } catch {
-      // not authenticated, just continue — auth middleware will handle it
-    }
+    } catch {}
     return next()
   }
 }
