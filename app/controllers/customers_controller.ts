@@ -5,10 +5,13 @@ import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import Commend from '#models/commend'
 import { DateTime } from 'luxon'
+import { comment } from 'postcss'
 
 export default class CustomersController {
   async index({ view, auth }: HttpContext) {
-    const customers = await Customer.query().preload('commends').orderBy('created_at', 'desc')
+    const customers = await Customer.query().preload('commend',(query) => {
+    query.where('user_id', auth.user!.id)
+  }).orderBy('created_at', 'desc')
 
     const user = auth.user!
 
@@ -23,12 +26,24 @@ export default class CustomersController {
     return view.render('pages/customers/new')
   }
 
-  async store({ request, response }: HttpContext) {
+  async store({ request, response,auth }: HttpContext) {
+    console.log('Auth user:', auth.user)
     try {
       const { pledgecards, commends, ...customerData } =
         await request.validateUsing(createCustomerValidator)
 
-      await CustomerService.create(customerData, pledgecards, commends)
+      await CustomerService.store(customerData, pledgecards)
+
+      if (comments && commends[0]){
+      await Commend.updateOrCreate({
+       customerId: customer.id,
+       userId: auth.user!.id,
+},
+{
+  commendName: commends[0],
+  scheduledAt: DateTime.now(),
+})
+      }
 
       return response.redirect().toRoute('customer.index')
     } catch (error) {
@@ -36,15 +51,29 @@ export default class CustomersController {
     }
   }
 
-  async storeCommend({ request, response }: HttpContext) {
-    try {
-      const data = request.only(['customer_id', 'commend_name', 'scheduled_at'])
+  async storeCommend({ request, response, auth }: HttpContext) {
 
+    try {
+          const user = auth.user!
+
+      const {customer_id, commend_name} = request.only(['customer_id', 'commend_name'])
+
+       const existingCommend = await Commend.query()
+      .where('customer_id', customer_id)
+      .where('user_id', user.id)
+      .first()
+
+      if (existingCommend) {
+      existingCommend.commendName = commend_name
+      await existingCommend.save()
+    } else {
       await Commend.create({
-        customerId: data.customer_id,
-        commendName: data.commend_name,
+        customerId: customer_id,
+        userId: user.id,
+        commendName: commend_name,
         scheduledAt: DateTime.now(),
       })
+    }
 
       return response.redirect().back()
     } catch (error) {
@@ -57,67 +86,96 @@ export default class CustomersController {
     const customer = await Customer.query()
       .where('id', params.id)
       .preload('pledgeCards')
-      .preload('commends')
+      .preload('commend')
       .firstOrFail()
 
     return view.render('pages/customers/edit', { customer })
   }
 
-  async update({ params, request, response }: HttpContext) {
-    try {
-      const { pledgecards, commends, ...customerData } =
-        await request.validateUsing(createCustomerValidator)
+  async update({ params, request, response, auth }: HttpContext) {
+  try {
+    const { pledgecards, ...customerData } =
+      await request.validateUsing(createCustomerValidator)
 
-      const deleteIds = request.input('remove_image_ids', [])
-      const deleteCommendIds = request.input('remove_commend_ids', [])
-      const existingCommends = request.input('existing_commends', {})
+    const deleteImageIds = request.input('remove_image_ids', [])
 
-      const newFilePaths =
-        pledgecards && Array.isArray(pledgecards)
-          ? await Promise.all(pledgecards.map((file) => CustomerService.storePlegdeCard(file)))
-          : []
+    const existingCommand = request.input('existing_command')
+    const newCommand = request.input('new_command')
+    const removeCommand = request.input('remove_command')
 
-      await db.transaction(async (trx) => {
-        await CustomerService.update(params.id, customerData, newFilePaths, deleteIds, trx)
-
-        for (const id in existingCommends) {
-          const value = existingCommends[id].trim()
-
-          if (value !== '') {
-            await Commend.query({ client: trx }).where('id', id).update({
-              commend_name: value,
-              updated_at: new Date(),
-            })
-          }
-        }
-
-        if (deleteCommendIds.length) {
-          await Commend.query({ client: trx }).whereIn('id', deleteCommendIds).delete()
-        }
-
-        const newCommends = (commends || []).map((c) => c.trim()).filter((c) => c !== '')
-
-        if (newCommends.length) {
-          await Promise.all(
-            newCommends.map((cmd) => {
-              return Commend.create(
-                {
-                  customerId: params.id,
-                  commendName: cmd,
-                  scheduledAt: DateTime.now(),
-                },
-                { client: trx }
-              )
-            })
+    const newFilePaths =
+      pledgecards && Array.isArray(pledgecards)
+        ? await Promise.all(
+            pledgecards.map((file) =>
+              CustomerService.storePlegdeCard(file)
+            )
           )
-        }
-      })
-      return response.redirect().toRoute('customer.index')
-    } catch (error) {
-      console.log(error)
-      return response.redirect().back()
-    }
+        : []
+
+    await db.transaction(async (trx) => {
+
+      await CustomerService.update(
+        params.id,
+        customerData,
+        newFilePaths,
+        deleteImageIds,
+        trx
+      )
+
+      if (removeCommand) {
+        await Commend.query({ client: trx })
+          .where('customer_id', params.id)
+          .delete()
+      }
+
+      // ✅ Handle command update
+      if (existingCommand && existingCommand.trim() !== '') {
+        await Commend.query({ client: trx })
+          .where('customer_id', params.id)
+          .where('user_id', auth.user!.id) // 🔥 MUST
+
+          .update({
+            commendName: existingCommand.trim(),
+            updatedAt: new Date(),
+          })
+      }
+
+      // ✅ Handle new command (if none exists)
+      if (newCommand && newCommand.trim() !== '') {
+        await Commend.create(
+          {
+            customerId: params.id,
+            commendName: newCommand.trim(),
+            scheduledAt: DateTime.now(),
+          },
+          { client: trx }
+        )
+      }
+
+    })
+
+    return response.redirect().toRoute('customer.index')
+
+  } catch (error) {
+    console.log(error)
+    return response.redirect().back()
   }
+}
+
+
+  async show({ params, view, auth }: HttpContext) {
+  const customer = await Customer.query()
+    .where('id', params.id)
+    .preload('commend', (query) => {
+      query.where('user_id', auth.user!.id)
+    })
+    .preload('pledgeCards') // load images
+    .firstOrFail()
+
+  return view.render('pages/customers/show', {
+    customer,
+  })
+}
 
   async destroy({ params, response }: HttpContext) {
     try {

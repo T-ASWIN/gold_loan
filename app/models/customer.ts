@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, hasMany, hasOne } from '@adonisjs/lucid/orm'
+import type { HasMany, HasOne } from '@adonisjs/lucid/types/relations'
 import PledgeCard from './pledge_card.js'
 import Commend from './commend.js'
 
@@ -35,6 +35,6 @@ export default class Customer extends BaseModel {
   @hasMany(() => PledgeCard)
   declare pledgeCards: HasMany<typeof PledgeCard>
 
-  @hasMany(() => Commend)
-  declare commends: HasMany<typeof Commend>
+  @hasOne(() => Commend)
+  declare commend: HasOne<typeof Commend>
 }

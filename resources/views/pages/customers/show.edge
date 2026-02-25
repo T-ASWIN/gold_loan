@@ -57,21 +57,22 @@
                 <h2 class="text-[11px] font-bold uppercase tracking-widest text-orange-400 px-1">Comments</h2>
             </div>
 
-            @if(customer.commends.length)
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                @each(commend in customer.commends)
-                <div class="p-3 bg-orange-50 border-l-4 border-orange-400 rounded-r-xl rounded-l-sm shadow-sm">
-                    <p class="text-slate-700 text-sm leading-relaxed">
-                        {{ commend.commendName }}
-                    </p>
-                </div>
-                @endeach
+            @if(customer.commend)
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-3 bg-orange-50 border-l-4 border-orange-400 rounded-r-xl rounded-l-sm shadow-sm">
+                <p class="text-slate-700 text-sm leading-relaxed">
+                    {{ customer.commend.commendName }}
+                </p>
             </div>
-            @else
-            <div class="py-4 text-center bg-orange-50 rounded-xl border border-dashed border-orange-200">
-                <p class="text-orange-300 text-xs italic">No comments recorded yet.</p>
-            </div>
-            @endif
+        </div>
+    @else
+        <div class="py-4 text-center bg-orange-50 rounded-xl border border-dashed border-orange-200">
+            <p class="text-orange-300 text-xs italic">
+                No comments recorded yet.
+            </p>
+        </div>
+    @endif
+
         </div>
 
         <label class="block text-sm font-semibold text-orange-500">Existing Pledge Cards</label>

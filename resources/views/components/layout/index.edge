@@ -57,13 +57,13 @@
                {{ request.url().startsWith('/customer') ? 'bg-orange-600 text-black' : 'text-black hover:bg-orange-800 hover:text-black' }}">
         Lead
       </a>
-    @if(currentRole === 'operation Head')
+    
       <a href="{{ route('admin.users.index') }}"
         class="block px-4 py-2.5 rounded-xl text-sm font-semibold transition-all
                {{ request.url().startsWith('/admin') ? 'bg-orange-600 text-black' : 'text-black hover:bg-orange-800 hover:text-black' }}">
         User
       </a>
-    @endif
+  
     </div>
   </div>
 </div>

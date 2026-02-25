@@ -6,7 +6,7 @@
         <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">
             Customers
         </h1>
-        @if(permissions && permissions.includes('create_customer'))
+        @if(permissions && permissions.includes('maker_customer'))
         <div class="flex gap-2">
             <a href="{{ route('customer.create') }}"
                 class="bg-orange-500 text-white px-8 py-2 rounded-full font-bold shadow-md hover:bg-orange-600 transition-colors">
@@ -31,9 +31,6 @@
                     </th>
                     <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
                         Address
-                    </th>
-                    <th class="px-8 py-5 text-left text-xs font-bold tracking-widest text-white uppercase">
-                        Commends
                     </th>
                     <th class="px-8 py-5 text-right text-xs font-bold tracking-widest text-white uppercase">
                         Actions
@@ -61,40 +58,7 @@
                     <td class="px-8 py-6 text-sm text-slate-600">
                         {{ customer.address }}
                     </td>
-                    <td class="px-8 py-6 text-sm relative">
-                        @if(customer.commends.length)
-                        <div class="relative inline-block text-left">
-                            <button type="button" onclick="toggleCommendPopup(event, {{ customer.id }})"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-orange-600 font-semibold text-xs border border-orange-200 hover:bg-orange-100 transition-colors focus:outline-none">
-                                {{ customer.commends.length }} {{ customer.commends.length === 1 ? 'Commend' :
-                                'Commends' }}
-                            </button>
-
-                            <div id="cmd-popup-{{ customer.id }}"
-                                class="hidden absolute left-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-orange-100 z-[100] transform origin-top-left">
-                                <div class="p-4">
-                                    <div
-                                        class="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-3 px-2">
-                                        Commends
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        @each(cmd in customer.commends)
-                                        <div
-                                            class="px-3 py-2.5 bg-orange-50 text-slate-700 rounded-lg text-sm font-medium border border-orange-100">
-                                            {{ cmd.commendName }}
-                                        </div>
-                                        @end
-                                    </div>
-                                </div>
-                                <div
-                                    class="absolute -top-1.5 left-6 w-3 h-3 bg-white border-l border-t border-orange-100 rotate-45">
-                                </div>
-                            </div>
-                        </div>
-                        @else
-                        <span class="text-slate-400 italic text-sm">No commends</span>
-                        @end
-                    </td>
+                   
                     <td class="px-8 py-6 text-sm text-right relative">
                         <div class="inline-block text-left">
 
@@ -112,7 +76,7 @@
                             <!-- Dropdown -->
                             <div id="dropdown-{{ customer.id }}"
                                 class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-orange-100 z-50">
-                                @if(permissions && permissions.includes('edit_customer'))
+                                @if(permissions && permissions.includes('maker_customer'))
                                 <a href="{{ route('customer.edit', [customer.id]) }}"
                                     class="block px-4 py-2 text-sm hover:bg-orange-50 hover:text-orange-600">
                                     Edit
@@ -124,14 +88,14 @@
                                     view
                                 </a>
 
-                                @if(permissions && permissions.includes('comment_customer'))
-                                <a href="#" onclick="openCommendModal({{ customer.id}}, '{{customer.name}}')"
+                                @if(permissions && permissions.includes('maker_customer'))
+                                <a href="#" onclick="openCommendModal({{ customer.id}}, '{{customer.name}}','{{ customer.commend ? customer.commend.commendName : '' }}')"
                                     class="block px-4 py-2 text-sm hover:bg-orange-50 hover:text-orange-600">
                                     Commend
                                 </a>
                                 @endif
 
-                                @if(permissions && permissions.includes('delete_customer'))
+                                @if(permissions && permissions.includes('maker_customer'))
                                 <form action="{{ route('customer.destroy', [customer.id]) }}?_method=DELETE"
                                     method="POST" class="inline">
                                     {{ csrfField() }}
@@ -193,15 +157,6 @@
         }
     });
 
-    function openCommendModal(id, name) {
-        document.getElementById('commendModal').classList.remove('hidden');
-        document.getElementById('customerId').value = id;
-        document.getElementById('customerName').innerText = name;
-    }
-
-    function closeCommendModal() {
-        document.getElementById('commendModal').classList.add('hidden');
-    }
 </script>
 
 <div id="commendModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
@@ -240,11 +195,13 @@
 </div>
 
 <script>
-    function openCommendModal(id, name) {
-        document.getElementById('commendModal').classList.remove('hidden');
-        document.getElementById('customerId').value = id;
-        document.getElementById('customerName').innerText = name;
-    }
+    function openCommendModal(id, name, existingCommend = '') {
+    document.getElementById('commendModal').classList.remove('hidden');
+    document.getElementById('customerId').value = id;
+    document.getElementById('customerName').innerText = name;
+
+    document.querySelector('textarea[name="commend_name"]').value = existingCommend;
+}
 
     function closeCommendModal() {
         document.getElementById('commendModal').classList.add('hidden');

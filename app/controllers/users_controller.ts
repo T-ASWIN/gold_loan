@@ -12,7 +12,7 @@ export default class UsersController {
     const users = await User.query().preload('role')
     const roles = await Role.all()
 
-    return view.render('pages/admin/edit_roles', { users, roles, permissions })
+    return view.render('pages/admin/index', { users, roles, permissions })
   }
 
   async create({ view }: HttpContext) {
@@ -38,7 +38,32 @@ export default class UsersController {
     return response.redirect().toRoute('admin.users.index')
   }
 
+  
   async edit({ view, params }: HttpContext) {
+  const user = await User.findOrFail(params.id)
+
+
+
+    return view.render('pages/admin/edit', {
+      user,
+    })
+  }
+
+  async update({ params, request, response }: HttpContext) {
+  const user = await User.findOrFail(params.id)
+
+
+    const { full_name, email } = request.only(['full_name', 'email' ])
+
+    // Update user details
+    user.fullName = full_name
+    user.email = email
+    await user.save()
+
+    return response.redirect().toRoute('admin.users.index')
+  }
+
+  async editRoles({ view, params }: HttpContext) {
     const user = await User.query()
       .where('id', params.id)
       .preload('role', (q) => q.preload('permissions'))
@@ -54,33 +79,6 @@ export default class UsersController {
     })
   }
 
-  async editUser({ view, params }: HttpContext) {
-    const editUser = await User.query()
-      .where('id', params.id)
-      .preload('role', (q) => q.preload('permissions'))
-      .firstOrFail()
-
-    const allRoles = await Role.query().preload('permissions')
-
-    return view.render('pages/admin/edit_user', {
-      editUser,
-      allRoles,
-    })
-  }
-
-  async updateUser({ params, request, response }: HttpContext) {
-    const editUser = await User.query().where('id', params.id).preload('role').firstOrFail()
-
-    const { full_name, email, role_id } = request.only(['full_name', 'email', 'role_id'])
-
-    // Update user details
-    editUser.fullName = full_name
-    editUser.email = email
-    editUser.roleId = Number(role_id)
-    await editUser.save()
-
-    return response.redirect().toRoute('admin.users.index')
-  }
 
   async updatePermissions({ params, request, response }: HttpContext) {
     const user = await User.query().where('id', params.id).preload('role').firstOrFail()

@@ -2,6 +2,7 @@ import Customer from '#models/customer'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
 import { cuid } from '@adonisjs/core/helpers'
 import app from '@adonisjs/core/services/app'
+import db from '@adonisjs/lucid/services/db'
 import { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import fs from 'node:fs/promises'
 
@@ -17,60 +18,60 @@ export default class CustomerService {
     return localPath
   }
 
-  static async create(
-    data: any,
-    pledgecards: MultipartFile[] | undefined,
-    commends: string[] | undefined
-  ) {
-    return await db.transaction(async (trx) => {
-      // 1️⃣ Store Files
-      const filePaths =
-        pledgecards && Array.isArray(pledgecards)
-          ? await Promise.all(pledgecards.map((file) => this.storePlegdeCard(file)))
-          : []
+  static async store(
+  customerData: any,
+  pledgecards: MultipartFile[] | undefined,
+  
+) {
+  console.log('SERVICE STORE - customerData:', customerData)
+  console.log('SERVICE STORE - pledgecards:', pledgecards?.length)
 
-      // 2️⃣ Create Customer
+  const filePaths =
+    pledgecards && Array.isArray(pledgecards)
+      ? await Promise.all(
+          pledgecards.map((file) =>
+            CustomerService.storePlegdeCard(file)
+          )
+        )
+      : []
+
+  console.log('FILE PATHS:', filePaths)
+
+  try {
+    await db.transaction(async (trx) => {
+      console.log('INSIDE TRANSACTION')
+
       const customer = await Customer.create(
         {
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          address: data.address,
+          name: customerData.name,
+          email: customerData.email,
+          phoneNumber: customerData.phoneNumber,
+          address: customerData.address,
         },
         { client: trx }
       )
 
-      // 3️⃣ Store Pledge Cards
+      console.log('CUSTOMER CREATED:', customer.id)
+
       if (filePaths.length > 0) {
         const pledgeData = filePaths.map((path) => ({
           pledgeCard: path,
         }))
 
-        await customer.related('pledgeCards').createMany(pledgeData, {
-          client: trx,
-        })
+        await customer
+          .related('pledgeCards')
+          .createMany(pledgeData, { client: trx })
       }
 
-      // 4️⃣ Insert Commends
-      if (commends && commends.length) {
-        const filteredCommends = commends.filter((commend) => commend.trim() !== '')
+      
 
-        await Promise.all(
-          filteredCommends.map((commend) =>
-            trx.insertQuery().table('commends').insert({
-              customer_id: customer.id,
-              commend_name: commend,
-              scheduled_at: new Date(),
-              created_at: new Date(),
-              updated_at: new Date(),
-            })
-          )
-        )
-      }
-
-      return customer
+      console.log('TRANSACTION SUCCESS')
     })
+  } catch (error) {
+    console.error('TRANSACTION ERROR:', error)
+    throw error
   }
+}
 
   static async update(
     id: number,
