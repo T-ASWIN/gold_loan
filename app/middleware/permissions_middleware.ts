@@ -1,22 +1,25 @@
-import type { HttpContext } from '@adonisjs/core/http'
-import type { NextFn } from '@adonisjs/core/types/http'
+import { HttpContext } from "@adonisjs/core/http"
+import { NextFn } from "@adonisjs/core/types/http"
 
 export default class PermissionsMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
-    const { auth } = ctx
+    const { auth, request } = ctx
 
     try {
-      // silently check if user is logged in, don't throw if not
       await auth.check()
 
       if (auth.user) {
         await auth.user.load('role', (roleQuery) => {
           roleQuery.preload('permissions')
         })
+        console.log('PERMISSIONS LOADED FOR:', auth.user.email) // 👈 add this
+      } else {
+        console.log('NO AUTH USER on route:', request.url()) 
       }
-    } catch {
-      // not authenticated, just continue — auth middleware will handle it
+    } catch (e) {
+      console.log('PERMISSIONS MIDDLEWARE ERROR:', e.message) // 👈 and this
     }
+
     return next()
   }
 }

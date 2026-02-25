@@ -2,11 +2,16 @@
 
 @slot('main')
 
+@vite(['resources/js/customer/customer_form.js'])
+
+
+
 <div class="max-w-4xl mx-auto bg-white p-10 rounded-xl shadow-sm border border-orange-100">
 
     <div class="mb-10">
         <h1 class="text-3xl font-semibold text-slate-800">Customer Registration</h1>
     </div>
+     
 
     <form action="{{ route('customer.store') }}" method="POST" enctype="multipart/form-data" class="space-y-10">
         {{ csrfField() }}
@@ -20,34 +25,29 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div class="space-y-2">
                     <label for="name" class="block text-sm font-medium text-slate-700">Full Name</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') || '' }}" required
+                    <input type="text" name="name" id="name" min="3" title="Enter Name" required
                         placeholder="Enter full name"
                         class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
-                    @if(flashMessages.has('errors.name'))
-                    <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.name') }}</p>
-                    @end
                 </div>
 
                 <div class="space-y-2">
                     <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') || '' }}" required
+                    <input type="email" name="email" id="email"  required
                         placeholder="Enter email address"
                         class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
-                    @if(flashMessages.has('errors.email'))
-                    <p class="text-xs font-medium text-red-600 mt-1">{{ flashMessages.get('errors.email') }}</p>
-                    @end
+                    
                 </div>
 
                 <div class="space-y-2">
                     <label for="phoneNumber" class="block text-sm font-medium text-slate-700">Phone Number</label>
-                    <input type="text" name="phoneNumber" id="phoneNumber" value="{{ old('phoneNumber') || '' }}"
+                    <input type="tel" name="phoneNumber" id="phoneNumber" pattern="[0-9]{10}" maxlength="10" title="Enter valid 10 digit number" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required
                         placeholder="Enter phone number"
                         class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
                 </div>
 
                 <div class="space-y-2">
                     <label for="address" class="block text-sm font-medium text-slate-700">Address</label>
-                    <input type="text" name="address" id="address" value="{{ old('address') || '' }}"
+                    <input type="text" name="address" id="address" min="5" required
                         placeholder="Enter address"
                         class="block w-full px-4 py-3 rounded-lg border border-slate-200 text-slate-900 focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition-all placeholder:text-slate-400">
                 </div>
@@ -79,6 +79,7 @@
                 class="px-12 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all active:scale-[0.98] cursor-pointer">
                 <span class="mr-2">+</span> Add Commend
             </button>
+            
         </section>
 
         <section class="space-y-6">
@@ -106,7 +107,7 @@
                 class="px-8 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-orange-50 transition-all">
                 Cancel
             </a>
-            <button type="button" id="submit-all"
+            <button type="submit" 
                 class="px-12 bg-orange-500 hover:bg-orange-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-200 transition-all active:scale-[0.98] cursor-pointer">
                 Create Customer
             </button>
@@ -114,7 +115,7 @@
     </form>
 </div>
 
-<script>
+<script >
     let commendCount = 1;
 
     function addCommendField(value = '') {

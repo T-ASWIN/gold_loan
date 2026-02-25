@@ -51,7 +51,6 @@ router
       .as('destroy')
       .use(middleware.roleUrlManager([Permissions.DELETE]))
 
-    // Show is usually general view
     router
       .get('/:id', [CustomersController, 'show'])
       .as('show')

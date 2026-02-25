@@ -25,50 +25,23 @@ export default class CustomersController {
     return view.render('pages/customers/new')
   }
 
-  async store({ request, response }: HttpContext) {
-    console.log(request.only(['name', 'email', 'phoneNumber', 'address']))
+  async store({ request, response, session }: HttpContext) {
+
     try {
-      const { pledgecards, commends, ...customerData } =
-        await request.validateUsing(createCustomerValidator)
+    const { pledgecards, commends, ...customerData } =
+      await request.validateUsing(createCustomerValidator)
 
-      console.log('commends:', commends)
+    console.log('FILES:', pledgecards?.length)
+    console.log('COMMENDS:', commends)
 
-      const filePaths =
-        pledgecards && Array.isArray(pledgecards)
-          ? await Promise.all(pledgecards.map((file) => CustomerService.storePlegdeCard(file)))
-          : []
+    await CustomerService.store(customerData, pledgecards, commends)
 
-      await db.transaction(async (trx) => {
-        const customer = await CustomerService.create(customerData, filePaths, trx)
-
-        console.log('filtered commends before insert:', commends)
-
-        if (commends && commends.length) {
-          const customer_commends = commends.filter((commend) => commend.trim() !== '')
-
-          console.log('after filter:', customer_commends)
-
-          await Promise.all(
-            customer_commends.map((commend) => {
-              return trx.insertQuery().table('commends').insert({
-                customer_id: customer.id,
-                commend_name: commend,
-                scheduled_at: new Date(),
-                created_at: new Date(),
-                updated_at: new Date(),
-              })
-            })
-          )
-        }
-      })
-
-      return response.redirect().toRoute('customer.index')
-    } catch (error) {
-      console.error('STORE ERROR:', error.message)  // 👈 add this
-    console.error('STACK:', error.stack)     
-      return response.redirect().back()
-    }
+    return response.redirect().toRoute('customer.index')
+  } catch {
+  return response.redirect().back()
+}
   }
+
 
   async show({ view, params }: HttpContext) {
     const customer = await Customer.query()
