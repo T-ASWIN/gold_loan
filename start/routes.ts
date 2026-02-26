@@ -73,15 +73,15 @@
     .prefix('/auth')
     .as('auth')
 
-  router
+ router
     .group(() => {
       router.get('/', [UsersController, 'index']).as('index')
       router.get('/create', [UsersController, 'create']).as('create')
       router.post('/', [UsersController, 'store']).as('store')
       router.get('/:id/edit', [UsersController, 'edit']).as('edit')
       router.put('/:id', [UsersController, 'update']).as('update')
-      router.get('/:id/permissions', [UsersController, 'editRoles']).as('editPermissions')
-      router.put('/:id/permissions', [UsersController, 'updatePermissions']).as('updatePermissions')
+      router.get('/permissions', [UsersController, 'editRoles']).as('editPermissions')
+      router.post('/permissions', [UsersController, 'updatePermissions']).as('updatePermissions')
     })
     .prefix('/admin/users')
     .as('admin.users')

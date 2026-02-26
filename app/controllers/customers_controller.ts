@@ -5,7 +5,6 @@ import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import Commend from '#models/commend'
 import { DateTime } from 'luxon'
-import { comment } from 'postcss'
 
 export default class CustomersController {
   async index({ view, auth }: HttpContext) {
@@ -26,30 +25,32 @@ export default class CustomersController {
     return view.render('pages/customers/new')
   }
 
-  async store({ request, response,auth }: HttpContext) {
-    console.log('Auth user:', auth.user)
-    try {
-      const { pledgecards, commends, ...customerData } =
-        await request.validateUsing(createCustomerValidator)
+  async store({ request, response, auth }: HttpContext) {
+  try {
+    const { pledgecards, commend, ...customerData } =
+      await request.validateUsing(createCustomerValidator)
 
-      await CustomerService.store(customerData, pledgecards)
+    const customer = await CustomerService.store(customerData, pledgecards)
 
-      if (comments && commends[0]){
-      await Commend.updateOrCreate({
-       customerId: customer.id,
-       userId: auth.user!.id,
-},
-{
-  commendName: commends[0],
-  scheduledAt: DateTime.now(),
-})
-      }
-
-      return response.redirect().toRoute('customer.index')
-    } catch (error) {
-      return response.redirect().back()
+    if (commend) {
+      await Commend.updateOrCreate(
+        {
+          customerId: customer.id,
+          userId: auth.user!.id,
+        },
+        {
+          commendName: commend,
+          scheduledAt: DateTime.now(),
+        }
+      )
     }
+
+    return response.redirect().toRoute('customer.index')
+  } catch (error) {
+    console.log(error)
+    return response.redirect().back()
   }
+}
 
   async storeCommend({ request, response, auth }: HttpContext) {
 
@@ -94,14 +95,11 @@ export default class CustomersController {
 
   async update({ params, request, response, auth }: HttpContext) {
   try {
-    const { pledgecards, ...customerData } =
+    const { pledgecards, commend, ...customerData } =
       await request.validateUsing(createCustomerValidator)
 
     const deleteImageIds = request.input('remove_image_ids', [])
-
-    const existingCommand = request.input('existing_command')
-    const newCommand = request.input('new_command')
-    const removeCommand = request.input('remove_command')
+    const removeCommend = request.input('remove_commend')
 
     const newFilePaths =
       pledgecards && Array.isArray(pledgecards)
@@ -112,50 +110,19 @@ export default class CustomersController {
           )
         : []
 
-    await db.transaction(async (trx) => {
-
-      await CustomerService.update(
-        params.id,
-        customerData,
+    await CustomerService.update(
+      params.id,
+      customerData,
+      {
         newFilePaths,
         deleteImageIds,
-        trx
-      )
-
-      if (removeCommand) {
-        await Commend.query({ client: trx })
-          .where('customer_id', params.id)
-          .delete()
+        commend,
+        removeCommend,
+        userId: auth.user!.id,
       }
-
-      // ✅ Handle command update
-      if (existingCommand && existingCommand.trim() !== '') {
-        await Commend.query({ client: trx })
-          .where('customer_id', params.id)
-          .where('user_id', auth.user!.id) // 🔥 MUST
-
-          .update({
-            commendName: existingCommand.trim(),
-            updatedAt: new Date(),
-          })
-      }
-
-      // ✅ Handle new command (if none exists)
-      if (newCommand && newCommand.trim() !== '') {
-        await Commend.create(
-          {
-            customerId: params.id,
-            commendName: newCommand.trim(),
-            scheduledAt: DateTime.now(),
-          },
-          { client: trx }
-        )
-      }
-
-    })
+    )
 
     return response.redirect().toRoute('customer.index')
-
   } catch (error) {
     console.log(error)
     return response.redirect().back()
@@ -169,8 +136,7 @@ export default class CustomersController {
     .preload('commend', (query) => {
       query.where('user_id', auth.user!.id)
     })
-    .preload('pledgeCards') // load images
-    .firstOrFail()
+    .preload('pledgeCards')     .firstOrFail()
 
   return view.render('pages/customers/show', {
     customer,
@@ -182,7 +148,6 @@ export default class CustomersController {
       await CustomerService.delete(params.id)
       return response.redirect().toRoute('customer.index')
     } catch (error) {
-      console.error('DELETE_ERROR:', error)
       return response.redirect().back()
     }
   }

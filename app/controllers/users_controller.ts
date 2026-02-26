@@ -2,12 +2,17 @@ import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import Role from '#models/role'
 import Permission from '#models/permission'
+import { updatePermissionsValidator } from '#validators/user'
 
 export default class UsersController {
   async index({ view, auth }: HttpContext) {
-    const user = auth.user!
-    await user.load('role', (q) => q.preload('permissions'))
-    const permissions = user.role?.permissions?.map((p) => p.name) ?? []
+    const user = await User.query()
+  .where('id', auth.user!.id)
+  .preload('role', (roleQuery) => {
+    roleQuery.preload('permissions')
+  })
+  .firstOrFail()
+    const permissions = user.role!.permissions.map((p) => p.name)
 
     const users = await User.query().preload('role')
     const roles = await Role.all()
@@ -63,36 +68,35 @@ export default class UsersController {
     return response.redirect().toRoute('admin.users.index')
   }
 
-  async editRoles({ view, params }: HttpContext) {
-    const user = await User.query()
-      .where('id', params.id)
-      .preload('role', (q) => q.preload('permissions'))
-      .firstOrFail()
+  async editRoles({ view }: HttpContext) {
+  const roles = await Role.query().preload('permissions')
+  const permissions = await Permission.query().orderBy('id', 'asc')
 
-    const allPermissions = await Permission.all()
-    const userPermissions = user.role?.permissions?.map((p) => p.id) ?? []
 
-    return view.render('pages/admin/edit_user_permissions', {
-      editUser: user,
-      allPermissions,
-      userPermissions,
-    })
+
+  return view.render('pages/admin/edit_user_permissions', {
+    roles,
+    permissions,
+  })
   }
 
 
-  async updatePermissions({ params, request, response }: HttpContext) {
-    const user = await User.query().where('id', params.id).preload('role').firstOrFail()
+  async updatePermissions({ request, response }: HttpContext) {
+    
+  const { permissions } = await request.validateUsing(updatePermissionsValidator)
 
-    const { permission_ids } = request.only(['permission_ids'])
+  const roles = await Role.query()
 
-    // permission_ids comes as array of strings, convert to numbers
-    const ids: number[] = permission_ids
-      ? (Array.isArray(permission_ids) ? permission_ids : [permission_ids]).map(Number)
-      : []
+  for (const role of roles) {
+  const permissionIds = permissions?.[String(role.id)]
 
-    // sync replaces all existing permissions for this role
-    await user.role.related('permissions').sync(ids)
-
-    return response.redirect().toRoute('admin.users.index')
+  if (permissionIds) {
+    await role.related('permissions').sync(permissionIds)
+  } else {
+    await role.related('permissions').detach()
   }
+}
+
+  return response.redirect().toRoute('admin.users.index')
+}
 }

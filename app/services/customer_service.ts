@@ -1,9 +1,9 @@
+import Commend from '#models/commend'
 import Customer from '#models/customer'
 import { MultipartFile } from '@adonisjs/core/bodyparser'
 import { cuid } from '@adonisjs/core/helpers'
 import app from '@adonisjs/core/services/app'
 import db from '@adonisjs/lucid/services/db'
-import { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import fs from 'node:fs/promises'
 
 export default class CustomerService {
@@ -20,26 +20,24 @@ export default class CustomerService {
 
   static async store(
   customerData: any,
-  pledgecards: MultipartFile[] | undefined,
+  pledgecards?: MultipartFile[]
   
 ) {
-  console.log('SERVICE STORE - customerData:', customerData)
-  console.log('SERVICE STORE - pledgecards:', pledgecards?.length)
 
-  const filePaths =
-    pledgecards && Array.isArray(pledgecards)
-      ? await Promise.all(
-          pledgecards.map((file) =>
-            CustomerService.storePlegdeCard(file)
-          )
-        )
-      : []
+  let filePaths: string[] = []
 
-  console.log('FILE PATHS:', filePaths)
+if (pledgecards && Array.isArray(pledgecards)) {
+  for (const file of pledgecards) {
+    const path = await CustomerService.storePlegdeCard(file)
+    filePaths.push(path)
+  }
+}
+
+    let createdCustomer: Customer  
+
 
   try {
     await db.transaction(async (trx) => {
-      console.log('INSIDE TRANSACTION')
 
       const customer = await Customer.create(
         {
@@ -51,9 +49,10 @@ export default class CustomerService {
         { client: trx }
       )
 
-      console.log('CUSTOMER CREATED:', customer.id)
+      createdCustomer = customer 
 
-      if (filePaths.length > 0) {
+
+      if (filePaths.length) {
         const pledgeData = filePaths.map((path) => ({
           pledgeCard: path,
         }))
@@ -65,52 +64,73 @@ export default class CustomerService {
 
       
 
-      console.log('TRANSACTION SUCCESS')
     })
   } catch (error) {
-    console.error('TRANSACTION ERROR:', error)
     throw error
   }
+   return createdCustomer! 
 }
 
+  
   static async update(
-    id: number,
-    data: any,
-    newFilePaths: string[],
-    deleteIds: number[],
-    trx: TransactionClientContract
-  ) {
-    const customer = await Customer.findOrFail(id, { client: trx })
+  customerId: number,
+  data: any,
+  options: {
+    newFilePaths?: string[]
+    deleteImageIds?: number[]
+    commend?: string
+    removeCommend?: string
+    userId: number
+  }
+) {
+  await db.transaction(async (trx) => {
+
+    const customer = await Customer.findOrFail(customerId, { client: trx })
 
     customer.merge(data)
-    customer.useTransaction(trx)
-    await customer.save()
+    await customer.useTransaction(trx).save()
 
-    if (deleteIds.length > 0) {
-      const deletePledge = await customer.related('pledgeCards').query().whereIn('id', deleteIds)
+    const deleteIds = options.deleteImageIds ?? []
+    const newFiles = options.newFilePaths ?? []
 
-      for (const pledge of deletePledge) {
-        try {
-          const absolutePath = app.makePath('public', pledge.pledgeCard)
-          await fs.unlink(absolutePath)
-        } catch (error) {
-          console.error(`Could not delete file: ${pledge.pledgeCard}`, error)
-        }
-      }
-
+    if (deleteIds.length) {
       await customer
         .related('pledgeCards')
         .query()
-        .useTransaction(trx)
         .whereIn('id', deleteIds)
         .delete()
     }
 
-    if (newFilePaths.length > 0) {
-      const pledgeData = newFilePaths.map((path) => ({ pledgeCard: path }))
-      await customer.related('pledgeCards').createMany(pledgeData, { client: trx })
+    if (newFiles.length) {
+      await customer.related('pledgeCards').createMany(
+        newFiles.map((path) => ({
+          pledgeCard: path,
+        })),
+        { client: trx }
+      )
     }
-  }
+
+    if (options.removeCommend) {
+      await Commend.query({ client: trx })
+        .where('customer_id', customerId)
+        .where('user_id', options.userId)
+        .delete()
+    }
+
+    else if (options.commend) {
+      await Commend.updateOrCreate(
+        {
+          customerId: customerId,
+          userId: options.userId,
+        },
+        {
+          commendName: options.commend,
+        },
+        { client: trx }
+      )
+    }
+  })
+}
 
   static async delete(id: number) {
     const customer = await Customer.query().where('id', id).preload('pledgeCards').firstOrFail()
@@ -120,7 +140,6 @@ export default class CustomerService {
         const absolutePath = app.makePath('public', card.pledgeCard)
         await fs.unlink(absolutePath)
       } catch (error) {
-        console.error(`Cleanup error during customer delete for file ${card.pledgeCard}:`, error)
       }
     }
     await customer.delete()

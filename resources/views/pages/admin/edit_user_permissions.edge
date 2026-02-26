@@ -1,52 +1,119 @@
 @component('components/layout/index')
 
 @slot('main')
-<div class="max-w-2xl mx-auto">
+<div class="max-w-4xl mx-auto">
 
+  <!-- Header -->
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">Edit Permissions</h1>
+      <h1 class="text-3xl font-extrabold text-slate-900">
+        Role Permissions
+      </h1>
       <p class="text-slate-500 text-sm mt-1">
-        {{ editUser.fullName }} —
-        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-600">
-          {{ editUser.role?.name ?? 'No Role' }}
-        </span>
+        Manage permissions for all roles
       </p>
     </div>
+
     <a href="{{ route('admin.users.index') }}"
-      class="text-sm font-medium text-slate-500 hover:text-orange-500 transition-colors">
+      class="text-sm font-semibold text-slate-500 hover:text-orange-500 transition-colors">
       ← Back
     </a>
   </div>
 
-  <div class="bg-white rounded-2xl border border-orange-100 shadow-xl p-8">
+  <!-- Card -->
+  <div class="bg-white rounded-2xl border border-orange-100 shadow-xl overflow-hidden">
 
-    <form action="{{ route('admin.users.updatePermissions', [editUser.id]) }}?_method=PUT" method="POST">
+    <form method="POST" action="{{ route('admin.users.updatePermissions') }}">
       {{ csrfField() }}
 
-      <div class="space-y-4 mb-8">
-        <h2 class="text-xs font-bold uppercase tracking-widest text-orange-400">Permissions</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left border-collapse">
 
-        @each(permission in allPermissions)
-        <label
-          class="flex items-center gap-4 p-4 rounded-xl border border-orange-100 bg-orange-50 hover:bg-orange-100 hover:border-orange-300 cursor-pointer transition-all">
-          <input type="checkbox" name="permission_ids[]" value="{{ permission.id }}" {{
-            userPermissions.includes(permission.id) ? 'checked' : '' }}
-            class="w-5 h-5 rounded accent-orange-500 cursor-pointer" />
-          <span class="text-sm font-semibold text-slate-700">{{ permission.name }}</span>
-        </label>
-        @endeach
+          <!-- Table Head -->
+          <thead class="bg-orange-50 border-b border-orange-200">
+            <tr>
+              <th class="px-6 py-4 font-bold text-orange-600 uppercase tracking-wider">
+                Role
+              </th>
+
+              @each(permission in permissions)
+                <th class="px-6 py-4 text-center font-bold text-orange-600 uppercase tracking-wider">
+                  {{ permission.name }}
+                </th>
+              @endeach
+            </tr>
+          </thead>
+
+          <!-- Table Body -->
+          <tbody class="divide-y divide-orange-100">
+            @each(role in roles)
+              <tr class="hover:bg-orange-50 transition">
+                <td class="px-6 py-4 font-semibold text-slate-800">
+                  {{ role.name }}
+                </td>
+
+                @each(permission in permissions)
+                  <td class="px-6 py-4 text-center">
+                            @let(roleId = role.id)
+                    <input
+                      type="checkbox"
+                      name="permissions[{{ role.id }}]"
+                      value="{{ permission.id }}"
+                      class="w-5 h-5 text-orange-500 rounded focus:ring-orange-400 border-orange-300"
+                      @if(role.permissions.find(p => p.id === permission.id))
+                        checked
+                      @endif
+                    />
+                  </td>
+                @endeach
+              </tr>
+            @endeach
+          </tbody>
+
+        </table>
       </div>
 
-      <div class="flex justify-end">
+      <!-- Button -->
+      <div class="p-6 border-t border-orange-100 bg-orange-50 text-right">
         <button type="submit"
-          class="px-10 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200">
+          class="px-8 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-orange-200">
           Save Permissions
         </button>
       </div>
 
     </form>
+
   </div>
 </div>
+
+<script>
+  document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', function () {
+      const name = this.name  // e.g. permissions[1]
+      const value = this.value // permission id
+
+      // maker_customer id is 2, view_customer id is 1
+      if (this.value === '2' && this.checked) {
+        // find view_customer checkbox for the same role
+        const viewCheckbox = document.querySelector(
+          `input[name="${name}"][value="1"]`
+        )
+        if (viewCheckbox) {
+          viewCheckbox.checked = true
+        }
+      }
+
+      // if view_customer is unchecked, also uncheck maker_customer
+      if (this.value === '1' && !this.checked) {
+        const makerCheckbox = document.querySelector(
+          `input[name="${name}"][value="2"]`
+        )
+        if (makerCheckbox) {
+          makerCheckbox.checked = false
+        }
+      }
+    })
+  })
+</script>
 @endslot
 @end
